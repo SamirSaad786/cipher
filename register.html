@@ -271,6 +271,12 @@
   // ── REDIRECT IF LOGGED IN ──────────────────────────────────
   auth.onAuthStateChanged(u => { if(u) window.location.href='dashboard.html'; });
 
+// ── PRE-FILL INVITE FROM URL ───────────────────────────────
+const urlParams = new URLSearchParams(window.location.search);
+const urlInvite = urlParams.get('invite');
+if (urlInvite) {
+  document.getElementById('invite-code').value = urlInvite.toUpperCase();
+}  
   // ── STEP NAV ───────────────────────────────────────────────
   function goStep(n) {
     document.querySelectorAll('.step').forEach((s,i) => {
