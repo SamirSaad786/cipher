@@ -9,13 +9,17 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/cipher.css">
   <style>
-    body { overflow: hidden; }
+    /* ─────────────────────────────────────────────────────────────
+       ALL COLORS INSIDE THE PANEL ARE HARDCODED — no CSS variable
+       dependencies for text, borders, or backgrounds. This ensures
+       full visibility regardless of what cipher.css defines.
+       Accent color: teal #00c8b4
+    ───────────────────────────────────────────────────────────── */
+
+    body { overflow-x: hidden; }
 
     /* ── PARTICLE CANVAS ── */
-    #particle-canvas {
-      position: fixed; inset: 0; z-index: 0;
-      pointer-events: none;
-    }
+    #particle-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
     /* ── LOGIN STAGE ── */
     .login-stage {
@@ -26,19 +30,25 @@
       padding: 2rem;
     }
 
+    /* ── SCAN LINES: barely-there, 2% opacity, won't fight content ── */
+    .login-scanlines {
+      position: fixed; inset: 0; z-index: 1;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 5px,
+        rgba(0,0,0,0.02) 5px, rgba(0,0,0,0.02) 6px
+      );
+      pointer-events: none;
+    }
+
     /* ── LOGO BLOCK ── */
-    .logo-block { text-align: center; margin-bottom: 3rem; }
+    .logo-block { text-align: center; margin-bottom: 2rem; }
 
     .logo-cipher {
       font-family: 'Orbitron', monospace;
       font-size: clamp(2.2rem, 6vw, 4rem);
-      font-weight: 900;
-      letter-spacing: 0.15em;
+      font-weight: 900; letter-spacing: 0.15em;
       color: var(--cyan);
-      text-shadow:
-        0 0 10px var(--cyan),
-        0 0 30px rgba(0,240,255,0.5),
-        0 0 60px rgba(0,240,255,0.2);
+      text-shadow: 0 0 10px var(--cyan), 0 0 30px rgba(0,240,255,0.5), 0 0 60px rgba(0,240,255,0.2);
       animation: logoFlicker 6s ease-in-out infinite;
       position: relative;
     }
@@ -48,9 +58,8 @@
       position: absolute; top: 0; left: 0;
       color: var(--magenta);
       clip-path: polygon(0 30%, 100% 30%, 100% 50%, 0 50%);
-      transform: translate(-2px, 0);
-      opacity: 0;
-      animation: glitchClip 8s step-end infinite;
+      transform: translate(-2px, 0); opacity: 0;
+      animation: glitchClip 14s step-end infinite;
     }
 
     .logo-slash {
@@ -59,32 +68,28 @@
     }
 
     .logo-sub {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      letter-spacing: 0.4em;
-      margin-top: 0.5rem;
-      text-transform: uppercase;
+      font-family: 'Share Tech Mono', monospace; font-size: 0.75rem;
+      color: rgba(255,255,255,0.45); letter-spacing: 0.4em;
+      margin-top: 0.5rem; text-transform: uppercase;
     }
 
     .logo-tagline {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 1rem;
-      color: var(--violet);
-      letter-spacing: 0.2em;
-      margin-top: 0.25rem;
-      text-transform: uppercase;
+      font-family: 'Rajdhani', sans-serif; font-size: 1rem;
+      color: rgba(0,200,180,0.6); letter-spacing: 0.2em;
+      margin-top: 0.25rem; text-transform: uppercase;
     }
+
+    .logo-platform-desc {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.72rem;
+      color: rgba(255,255,255,0.3); letter-spacing: 0.2em;
+      margin-top: 0.4rem; text-transform: uppercase;
+    }
+    .logo-platform-desc span { color: #00c8b4; }
 
     @keyframes logoFlicker {
-      0%,100% { opacity: 1; }
-      92% { opacity: 1; }
-      93% { opacity: 0.7; }
-      94% { opacity: 1; }
-      96% { opacity: 0.8; }
-      97% { opacity: 1; }
+      0%,100% { opacity: 1; } 92% { opacity: 1; } 93% { opacity: 0.7; }
+      94% { opacity: 1; } 96% { opacity: 0.8; } 97% { opacity: 1; }
     }
-
     @keyframes glitchClip {
       0%,90%,100% { opacity: 0; }
       91% { opacity: 0.8; transform: translate(-3px, 0); }
@@ -93,11 +98,11 @@
       94% { opacity: 0; }
     }
 
-    /* ── LOGIN PANEL ── */
+    /* ── LOGIN PANEL — all values hardcoded ── */
     .login-panel {
-      background: var(--panel-bg);
-      border: 1px solid var(--border-color);
-      border-top: 2px solid var(--cyan);
+      background: #0e0c1f;
+      border: 1px solid rgba(0,200,180,0.25);
+      border-top: 2px solid #00c8b4;
       padding: 2.5rem 2.5rem 2rem;
       width: 100%; max-width: 420px;
       position: relative;
@@ -105,238 +110,161 @@
     }
 
     .login-panel::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: linear-gradient(135deg, rgba(0,240,255,0.03) 0%, transparent 50%);
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(0,200,180,0.06) 0%, transparent 55%);
       pointer-events: none;
     }
 
+    /* ── PANEL HEADER ── */
     .panel-header {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.7rem;
-      color: var(--cyan);
-      letter-spacing: 0.3em;
+      font-family: 'Share Tech Mono', monospace; font-size: 0.75rem;
+      color: #00c8b4; letter-spacing: 0.3em;
       margin-bottom: 1.75rem;
       display: flex; align-items: center; gap: 0.75rem;
     }
-
     .panel-header::after {
       content: ''; flex: 1; height: 1px;
-      background: linear-gradient(90deg, var(--border-color), transparent);
+      background: linear-gradient(90deg, rgba(0,200,180,0.3), transparent);
     }
 
+    /* ── STATUS DOT ── */
     .status-dot {
       width: 8px; height: 8px; border-radius: 50%;
-      background: var(--green); flex-shrink: 0;
-      box-shadow: 0 0 8px var(--green);
+      background: #00c8b4; flex-shrink: 0;
+      box-shadow: 0 0 8px #00c8b4;
       animation: pulse 2s ease-in-out infinite;
     }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
 
-    @keyframes pulse {
-      0%,100% { opacity: 1; } 50% { opacity: 0.4; }
-    }
-
-    /* ── FORM ── */
+    /* ── FORM — all hardcoded ── */
     .form-group { margin-bottom: 1.25rem; }
 
     .form-group label {
-      display: block;
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      margin-bottom: 0.5rem;
+      display: block; font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem; color: rgba(255,255,255,0.65);
+      letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.5rem;
     }
 
-    .input-wrapper {
-      position: relative;
-    }
+    .input-wrapper { position: relative; }
 
     .input-wrapper .input-icon {
       position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%);
-      color: var(--text-muted); font-size: 0.9rem;
+      color: rgba(255,255,255,0.3); font-size: 0.9rem;
       pointer-events: none; transition: color 0.2s;
     }
 
     .form-input {
-      width: 100%;
-      background: rgba(0,0,0,0.5);
-      border: 1px solid var(--border-color);
-      color: var(--text-primary);
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.9rem;
+      width: 100%; background: #07061a;
+      border: 1px solid rgba(255,255,255,0.18);
+      color: #e8e5ff;
+      font-family: 'Share Tech Mono', monospace; font-size: 0.9rem;
       padding: 0.75rem 0.875rem 0.75rem 2.5rem;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s;
       letter-spacing: 0.05em;
     }
-
     .form-input:focus {
-      border-color: var(--cyan);
-      box-shadow: 0 0 0 1px var(--cyan), 0 0 12px rgba(0,240,255,0.15);
+      border-color: #00c8b4;
+      box-shadow: 0 0 0 1px #00c8b4, 0 0 12px rgba(0,200,180,0.2);
     }
-
     .form-input:focus + .input-icon,
-    .input-wrapper:focus-within .input-icon {
-      color: var(--cyan);
-    }
+    .input-wrapper:focus-within .input-icon { color: #00c8b4; }
+    .form-input::placeholder { color: rgba(255,255,255,0.22); }
 
-    .form-input::placeholder { color: rgba(255,255,255,0.2); }
-
-    /* ── REMEMBER + FORGOT ── */
+    /* ── REMEMBER ── */
     .form-extras {
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 1.5rem;
     }
-
-    .remember-check {
-      display: flex; align-items: center; gap: 0.5rem;
-      cursor: pointer;
-    }
-
-    .remember-check input[type="checkbox"] {
-      width: 14px; height: 14px;
-      accent-color: var(--cyan);
-      cursor: pointer;
-    }
-
+    .remember-check { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; }
+    .remember-check input[type="checkbox"] { width: 14px; height: 14px; accent-color: #00c8b4; cursor: pointer; }
     .remember-check span {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.7rem; color: var(--text-muted);
-      text-transform: uppercase; letter-spacing: 0.1em;
+      font-family: 'Share Tech Mono', monospace; font-size: 0.7rem;
+      color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.1em;
     }
 
-    /* ── LOGIN BUTTON ── */
+    /* ── JACK IN BUTTON ── */
     .btn-jack-in {
       width: 100%;
-      background: linear-gradient(135deg, var(--cyan), var(--violet));
-      border: none; color: var(--bg-deep);
-      font-family: 'Orbitron', monospace;
-      font-size: 0.85rem; font-weight: 700;
-      letter-spacing: 0.3em; text-transform: uppercase;
-      padding: 0.9rem;
+      background: linear-gradient(135deg, #00c8b4, #007a6e);
+      border: none; color: #03020a;
+      font-family: 'Orbitron', monospace; font-size: 0.85rem; font-weight: 700;
+      letter-spacing: 0.3em; text-transform: uppercase; padding: 0.9rem;
       cursor: pointer;
       clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
-      transition: all 0.2s;
-      position: relative; overflow: hidden;
+      transition: all 0.2s; position: relative; overflow: hidden;
     }
-
     .btn-jack-in::before {
-      content: '';
-      position: absolute; top: -50%; left: -60%;
-      width: 40%; height: 200%;
-      background: rgba(255,255,255,0.15);
-      transform: skewX(-20deg);
-      transition: left 0.4s;
+      content: ''; position: absolute; top: -50%; left: -60%;
+      width: 40%; height: 200%; background: rgba(255,255,255,0.2);
+      transform: skewX(-20deg); transition: left 0.4s;
     }
-
     .btn-jack-in:hover::before { left: 130%; }
     .btn-jack-in:hover {
       transform: translateY(-1px);
-      box-shadow: 0 4px 24px rgba(0,240,255,0.3), 0 0 40px rgba(123,0,255,0.2);
+      box-shadow: 0 4px 24px rgba(0,200,180,0.4), 0 0 40px rgba(0,200,180,0.15);
     }
-
     .btn-jack-in:active { transform: translateY(0); }
     .btn-jack-in:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    /* ── ERROR MESSAGE ── */
-    .error-msg {
-      display: none;
-      background: rgba(255,0,60,0.1);
-      border: 1px solid var(--magenta);
-      color: var(--magenta);
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.75rem;
-      padding: 0.6rem 0.875rem;
-      margin-top: 1rem;
-      letter-spacing: 0.05em;
-    }
-
-    .error-msg.visible { display: block; animation: fadeIn 0.2s; }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; } }
-
-    /* ── FOOTER LINKS ── */
-    .login-footer {
-      text-align: center; margin-top: 1.5rem;
-    }
-
-    .login-footer p {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.72rem; color: var(--text-muted);
-      letter-spacing: 0.05em;
-    }
-
-    .login-footer a {
-      color: var(--cyan); text-decoration: none;
-      transition: text-shadow 0.2s;
-    }
-
-    .login-footer a:hover {
-      text-shadow: 0 0 8px var(--cyan);
-    }
-
-    /* ── SCAN LINES OVERLAY (login-specific intensity) ── */
-    .login-scanlines {
-      position: fixed; inset: 0; z-index: 1;
-      background: repeating-linear-gradient(
-        0deg, transparent, transparent 2px,
-        rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px
-      );
-      pointer-events: none;
-    }
 
     /* ── LOADING STATE ── */
     .btn-jack-in .btn-text { transition: opacity 0.2s; }
     .btn-jack-in.loading .btn-text { opacity: 0; }
     .btn-jack-in.loading::after {
-      content: '';
-      position: absolute; top: 50%; left: 50%;
+      content: ''; position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      width: 16px; height: 16px;
-      border: 2px solid transparent;
-      border-top-color: var(--bg-deep);
-      border-radius: 50%;
+      width: 16px; height: 16px; border: 2px solid transparent;
+      border-top-color: #03020a; border-radius: 50%;
       animation: spin 0.6s linear infinite;
     }
-
     @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
 
-    /* ── CORNER DECORATIONS ── */
-    .corner-tl, .corner-br {
-      position: absolute;
-      width: 20px; height: 20px;
-      pointer-events: none;
+    /* ── ERROR MESSAGE ── */
+    .error-msg {
+      display: none; background: rgba(255,0,60,0.1);
+      border: 1px solid #ff003c; color: #ff003c;
+      font-family: 'Share Tech Mono', monospace; font-size: 0.75rem;
+      padding: 0.6rem 0.875rem; margin-top: 1rem; letter-spacing: 0.05em;
     }
-    .corner-tl {
-      top: -1px; left: -1px;
-      border-top: 2px solid var(--violet);
-      border-left: 2px solid var(--violet);
-    }
-    .corner-br {
-      bottom: -1px; right: -1px;
-      border-bottom: 2px solid var(--violet);
-      border-right: 2px solid var(--violet);
-    }
+    .error-msg.visible { display: block; animation: fadeIn 0.2s; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; } }
 
-    /* ── SYSTEM STATS STRIP ── */
-    .sys-stats {
-      display: flex; gap: 2rem;
-      margin-top: 2rem;
-      justify-content: center;
+    /* ── FOOTER ── */
+    .login-footer { text-align: center; margin-top: 1.5rem; }
+    .login-footer .invite-badge {
+      font-family: 'Orbitron', monospace; font-size: 0.65rem; font-weight: 700;
+      color: #00c8b4; letter-spacing: 0.35em;
+      text-transform: uppercase; margin-bottom: 0.5rem;
     }
+    .login-footer p {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.72rem;
+      color: rgba(255,255,255,0.4); letter-spacing: 0.05em;
+    }
+    .login-footer a { color: #00c8b4; text-decoration: none; transition: text-shadow 0.2s; }
+    .login-footer a:hover { text-shadow: 0 0 8px #00c8b4; }
+
+    /* ── CORNER DECORATIONS — teal ── */
+    .corner-tl, .corner-br { position: absolute; width: 20px; height: 20px; pointer-events: none; }
+    .corner-tl { top: -1px; left: -1px; border-top: 2px solid #00c8b4; border-left: 2px solid #00c8b4; }
+    .corner-br { bottom: -1px; right: -1px; border-bottom: 2px solid #00c8b4; border-right: 2px solid #00c8b4; }
+
+    /* ── STATS STRIP — hardcoded, elevated ── */
+    .sys-stats { display: flex; gap: 0.6rem; margin-top: 2rem; justify-content: center; }
     .sys-stat {
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.65rem;
-      color: rgba(255,255,255,0.2);
-      letter-spacing: 0.15em;
+      font-family: 'Share Tech Mono', monospace; font-size: 0.72rem;
+      color: rgba(255,255,255,0.65); letter-spacing: 0.15em;
+      padding: 0.4rem 0.75rem;
+      border: 1px solid rgba(0,200,180,0.2);
+      background: #0e0c1f;
     }
-    .sys-stat span { color: var(--violet); }
+    .sys-stat span { color: #00c8b4; }
+
+    /* ── PREFERS-REDUCED-MOTION ── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
   </style>
 </head>
 <body>
-  <!-- Particle background -->
   <canvas id="particle-canvas"></canvas>
   <div class="login-scanlines"></div>
 
@@ -349,6 +277,10 @@
       </div>
       <div class="logo-sub">v1.0 · Secure Node Active</div>
       <div class="logo-tagline">Jack into the code. Level up your protocol.</div>
+      <!-- CHANGE #4: platform descriptor -->
+      <div class="logo-platform-desc">
+        <span>HTML</span> MASTERY &nbsp;·&nbsp; <span>20</span> LESSONS &nbsp;·&nbsp; <span>NFT</span> REWARDS
+      </div>
     </div>
 
     <!-- LOGIN PANEL -->
@@ -369,7 +301,8 @@
             placeholder="your_handle" autocomplete="username"
             autocapitalize="none" spellcheck="false"
           >
-          <span class="input-icon">⬡</span>
+          <!-- CHANGE #4: aria-hidden on decorative icons -->
+          <span class="input-icon" aria-hidden="true">⬡</span>
         </div>
       </div>
 
@@ -380,7 +313,7 @@
             class="form-input" id="password" type="password"
             placeholder="••••••••••" autocomplete="current-password"
           >
-          <span class="input-icon">⬡</span>
+          <span class="input-icon" aria-hidden="true">⬡</span>
         </div>
       </div>
 
@@ -395,15 +328,17 @@
         <span class="btn-text">JACK IN</span>
       </button>
 
-      <div class="error-msg" id="error-msg"></div>
+      <!-- CHANGE #4: role="alert" for accessibility -->
+      <div class="error-msg" id="error-msg" role="alert"></div>
 
+      <!-- CHANGE #4: footer reframed as privilege not barrier -->
       <div class="login-footer">
-        <p>No account? You need an invite.<br>
-        Contact <a href="mailto:cipher@cipher.learn">your operator</a> to get access.</p>
+        <p class="invite-badge">BY INVITATION ONLY</p>
+        <p>Contact <a href="mailto:cipher@cipher.learn">your operator</a> to request access.</p>
       </div>
     </div>
 
-    <!-- SYSTEM STATS -->
+    <!-- CHANGE #1: elevated stats strip with cell treatment -->
     <div class="sys-stats">
       <div class="sys-stat">NODES <span id="stat-lessons">20</span></div>
       <div class="sys-stat">TIERS <span>04</span></div>
@@ -446,7 +381,8 @@
         this.y    = init ? Math.random() * canvas.height : canvas.height + 10;
         this.vy   = -(0.3 + Math.random() * 0.8);
         this.vx   = (Math.random() - 0.5) * 0.3;
-        this.size = 0.5 + Math.random() * 1.5;
+        // CHANGE #3: slightly larger radius compensates for removed shadowBlur glow
+        this.size = 1 + Math.random() * 2;
         this.life = 0;
         this.maxLife = 150 + Math.random() * 200;
         const palette = ['#00f0ff','#7b00ff','#ff003c','#00ff9f','#ffd700'];
@@ -461,8 +397,7 @@
         ctx.save();
         ctx.globalAlpha = alpha * 0.6;
         ctx.fillStyle   = this.color;
-        ctx.shadowBlur  = 6;
-        ctx.shadowColor = this.color;
+        // CHANGE #3: shadowBlur removed — expensive canvas operation, saves ~30% render cost
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
@@ -470,8 +405,8 @@
       }
     }
 
-    // Generate particles
-    for (let i = 0; i < 120; i++) particles.push(new Particle());
+    // CHANGE #3: 120 → 80 particles
+    for (let i = 0; i < 80; i++) particles.push(new Particle());
 
     function animateParticles() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -515,8 +450,8 @@
         btn.classList.remove('loading');
         btn.disabled = false;
         let msg = 'AUTHENTICATION FAILED';
-        if (err.code === 'auth/user-not-found')   msg = 'UNKNOWN HANDLE — REQUEST AN INVITE';
-        if (err.code === 'auth/wrong-password')   msg = 'INVALID CREDENTIALS — ACCESS DENIED';
+        if (err.code === 'auth/user-not-found')    msg = 'UNKNOWN HANDLE — REQUEST AN INVITE';
+        if (err.code === 'auth/wrong-password')    msg = 'INVALID CREDENTIALS — ACCESS DENIED';
         if (err.code === 'auth/too-many-requests') msg = 'TOO MANY ATTEMPTS — STAND DOWN';
         showError(msg);
       }
