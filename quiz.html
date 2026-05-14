@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CIPHER://HTML — Knowledge Base</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/cipher.css">
+  <style>
+    /* ── BASE ── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg-deep, #03020a); color: var(--text-primary, #e8e5ff); font-family: 'Share Tech Mono', monospace; min-height: 100vh; }
+
+    /* ── NAV ── */
+    .topnav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(3,2,10,0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.08));
+      padding: 0 2rem; display: flex; align-items: center;
+      justify-content: space-between; height: 60px;
+    }
+    .nav-logo { font-family: 'Orbitron', monospace; font-size: 1rem; font-weight: 900; color: var(--cyan, #00f0ff); text-decoration: none; letter-spacing: 0.2em; text-shadow: 0 0 10px rgba(0,240,255,0.5); }
+    .nav-logo span { color: var(--magenta, #ff003c); }
+    .nav-right { display: flex; align-items: center; gap: 1.5rem; }
+    .nav-link { font-family: 'Share Tech Mono', monospace; font-size: 0.78rem; color: var(--text-muted, rgba(255,255,255,0.4)); text-decoration: none; letter-spacing: 0.1em; transition: color 0.2s; }
+    .nav-link:hover { color: var(--cyan, #00f0ff); }
+    .btn-logout { background: transparent; border: 1px solid var(--border-color, rgba(255,255,255,0.08)); color: var(--text-muted, rgba(255,255,255,0.4)); font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; padding: 0.3rem 0.75rem; cursor: pointer; transition: all 0.2s; letter-spacing: 0.1em; }
+    .btn-logout:hover { border-color: var(--magenta, #ff003c); color: var(--magenta, #ff003c); }
+
+    /* ── LOADING ── */
+    .loading-screen {
+      position: fixed; inset: 0; z-index: 999; background: var(--bg-deep, #03020a);
+      display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1rem;
+    }
+    .loading-spinner { width: 32px; height: 32px; border: 2px solid rgba(0,240,255,0.2); border-top-color: var(--cyan, #00f0ff); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    .loading-text { font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; color: var(--text-muted, rgba(255,255,255,0.4)); letter-spacing: 0.2em; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── PAGE WRAPPER ── */
+    .page { max-width: 900px; margin: 0 auto; padding: 2.5rem 2rem; }
+
+    /* ── SCREEN SYSTEM ── */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ── PAGE TITLE ── */
+    .page-title {
+      font-family: 'Orbitron', monospace; font-size: 0.75rem; font-weight: 700;
+      color: var(--text-muted, rgba(255,255,255,0.4)); letter-spacing: 0.4em;
+      text-transform: uppercase; margin-bottom: 0.5rem;
+    }
+    .page-heading {
+      font-family: 'Orbitron', monospace; font-size: 1.8rem; font-weight: 900;
+      color: var(--text-primary, #e8e5ff); letter-spacing: 0.1em; margin-bottom: 0.5rem;
+    }
+    .page-heading span { color: var(--cyan, #00f0ff); text-shadow: 0 0 12px rgba(0,240,255,0.4); }
+    .page-sub { font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; color: var(--text-muted, rgba(255,255,255,0.4)); margin-bottom: 2.5rem; line-height: 1.6; }
+
+    /* ── XP SUMMARY BAR ── */
+    .xp-summary {
+      display: flex; align-items: center; gap: 1rem;
+      background: rgba(0,240,255,0.05); border: 1px solid rgba(0,240,255,0.15);
+      padding: 0.75rem 1.25rem; margin-bottom: 2rem;
+      font-family: 'Share Tech Mono', monospace; font-size: 0.78rem; color: var(--text-muted, rgba(255,255,255,0.4));
+    }
+    .xp-summary strong { color: var(--cyan, #00f0ff); font-size: 1rem; }
+    .xp-summary .xp-label { letter-spacing: 0.15em; }
+    .xp-potential { margin-left: auto; color: var(--text-muted, rgba(255,255,255,0.4)); }
+    .xp-potential span { color: var(--green, #00ff9f); }
+
+    /* ── TIER GRID ── */
+    .tier-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
+    @media (max-width: 640px) { .tier-grid { grid-template-columns: 1fr; } }
+
+    /* ── TIER CARD ── */
+    .tier-card {
+      background: var(--panel-bg, rgba(10,9,22,0.8));
+      border: 1px solid var(--border-color, rgba(255,255,255,0.08));
+      padding: 1.75rem; position: relative; cursor: pointer;
+      transition: all 0.25s; overflow: hidden;
+      clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+    }
+    .tier-card::before { content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity 0.25s; pointer-events: none; }
+    .tier-card:hover:not(.locked)::before { opacity: 1; }
+    .tier-card.locked { opacity: 0.45; cursor: not-allowed; filter: grayscale(0.6); }
+    .tier-card.completed { opacity: 1; }
+
+    .tier-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .tier-badge {
+      font-family: 'Orbitron', monospace; font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 0.2em; padding: 0.2rem 0.6rem;
+      border: 1px solid; text-transform: uppercase;
+    }
+    .tier-status-icon { font-size: 1.4rem; }
+
+    .tier-name { font-family: 'Orbitron', monospace; font-size: 1.3rem; font-weight: 900; letter-spacing: 0.15em; margin-bottom: 0.25rem; }
+    .tier-desc { font-family: 'Share Tech Mono', monospace; font-size: 0.72rem; color: var(--text-muted, rgba(255,255,255,0.4)); line-height: 1.6; margin-bottom: 1.25rem; }
+
+    .tier-meta { display: flex; gap: 1.5rem; margin-bottom: 1.25rem; }
+    .tier-meta-item { font-family: 'Share Tech Mono', monospace; font-size: 0.68rem; color: var(--text-muted, rgba(255,255,255,0.4)); letter-spacing: 0.1em; }
+    .tier-meta-item span { font-weight: 700; }
+
+    .tier-score-bar { height: 3px; background: rgba(255,255,255,0.06); overflow: hidden; margin-bottom: 0.4rem; }
+    .tier-score-fill { height: 100%; transition: width 1s cubic-bezier(0.4,0,0.2,1); }
+    .tier-score-label { font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; color: var(--text-muted, rgba(255,255,255,0.4)); display: flex; justify-content: space-between; }
+
+    .btn-start-quiz {
+      width: 100%; padding: 0.7rem; border: none; cursor: pointer;
+      font-family: 'Orbitron', monospace; font-size: 0.75rem; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase; transition: all 0.2s;
+      clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+    }
+    .btn-start-quiz:hover { transform: translateY(-1px); }
+    .btn-start-quiz:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .locked-msg { font-family: 'Share Tech Mono', monospace; font-size: 0.68rem; color: var(--text-muted, rgba(255,255,255,0.4)); text-align: center; padding: 0.5rem; border: 1px solid rgba(255,255,255,0.06); letter-spacing: 0.1em; }
+
+    /* ── QUIZ SCREEN ── */
+    .quiz-header { margin-bottom: 2rem; }
+    .quiz-tier-label { font-family: 'Share Tech Mono', monospace; font-size: 0.72rem; letter-spacing: 0.3em; text-transform: uppercase; margin-bottom: 0.4rem; }
+    .quiz-progress-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+    .quiz-q-counter { font-family: 'Orbitron', monospace; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.15em; }
+    .quiz-xp-tally { font-family: 'Share Tech Mono', monospace; font-size: 0.75rem; color: var(--green, #00ff9f); }
+    .quiz-progress-bar { height: 4px; background: rgba(255,255,255,0.06); overflow: hidden; border-radius: 2px; }
+    .quiz-progress-fill { height: 100%; transition: width 0.4s cubic-bezier(0.4,0,0.2,1); }
+
+    .question-panel {
+      background: var(--panel-bg, rgba(10,9,22,0.8));
+      border: 1px solid var(--border-color, rgba(255,255,255,0.08));
+      border-top: 2px solid var(--cyan, #00f0ff);
+      padding: 2rem; margin-bottom: 1.25rem;
+      clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+      position: relative; min-height: 120px;
+    }
+    .q-type-badge { font-family: 'Share Tech Mono', monospace; font-size: 0.65rem; color: var(--text-muted, rgba(255,255,255,0.4)); letter-spacing: 0.3em; text-transform: uppercase; margin-bottom: 0.75rem; }
+    .q-text { font-family: 'Rajdhani', sans-serif; font-size: 1.2rem; font-weight: 600; color: var(--text-primary, #e8e5ff); line-height: 1.5; letter-spacing: 0.03em; }
+    .q-text code { font-family: 'Share Tech Mono', monospace; font-size: 0.95rem; color: var(--cyan, #00f0ff); background: rgba(0,240,255,0.08); padding: 0.1rem 0.4rem; }
+    .q-text .blank { display: inline-block; min-width: 80px; border-bottom: 2px solid var(--cyan, #00f0ff); color: var(--cyan, #00f0ff); text-align: center; margin: 0 0.25rem; padding: 0 0.5rem; }
+
+    /* ── MULTIPLE CHOICE ── */
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    @media (max-width: 600px) { .options-grid { grid-template-columns: 1fr; } }
+    .option-btn {
+      background: rgba(0,0,0,0.3); border: 1px solid var(--border-color, rgba(255,255,255,0.08));
+      color: var(--text-primary, #e8e5ff); font-family: 'Share Tech Mono', monospace;
+      font-size: 0.8rem; padding: 0.875rem 1rem; cursor: pointer; text-align: left;
+      transition: all 0.15s; letter-spacing: 0.03em; position: relative;
+      clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+    }
+    .option-btn:hover:not(:disabled) { border-color: var(--cyan, #00f0ff); background: rgba(0,240,255,0.06); transform: translateX(3px); }
+    .option-btn .opt-letter { font-family: 'Orbitron', monospace; font-size: 0.65rem; font-weight: 700; margin-right: 0.75rem; opacity: 0.5; }
+    .option-btn.selected { border-color: var(--cyan, #00f0ff); background: rgba(0,240,255,0.1); }
+    .option-btn.correct  { border-color: var(--green, #00ff9f) !important; background: rgba(0,255,159,0.1) !important; color: var(--green, #00ff9f) !important; }
+    .option-btn.wrong    { border-color: var(--magenta, #ff003c) !important; background: rgba(255,0,60,0.1) !important; color: var(--magenta, #ff003c) !important; }
+    .option-btn:disabled { cursor: not-allowed; }
+
+    /* ── FILL IN BLANK ── */
+    .fib-wrapper { display: flex; gap: 0.75rem; align-items: center; }
+    .fib-input {
+      flex: 1; background: rgba(0,0,0,0.5); border: 1px solid var(--border-color, rgba(255,255,255,0.08));
+      color: var(--text-primary, #e8e5ff); font-family: 'Share Tech Mono', monospace;
+      font-size: 0.9rem; padding: 0.75rem 1rem; outline: none; letter-spacing: 0.05em;
+      transition: border-color 0.2s;
+    }
+    .fib-input:focus { border-color: var(--cyan, #00f0ff); box-shadow: 0 0 0 1px var(--cyan, #00f0ff), 0 0 10px rgba(0,240,255,0.1); }
+    .fib-input.correct { border-color: var(--green, #00ff9f) !important; color: var(--green, #00ff9f); }
+    .fib-input.wrong   { border-color: var(--magenta, #ff003c) !important; color: var(--magenta, #ff003c); }
+    .fib-input:disabled { opacity: 0.7; cursor: not-allowed; }
+    .btn-submit-fib {
+      background: linear-gradient(135deg, var(--cyan, #00f0ff), var(--violet, #7b00ff));
+      border: none; color: var(--bg-deep, #03020a); font-family: 'Orbitron', monospace;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.15em; padding: 0.75rem 1.25rem;
+      cursor: pointer; transition: all 0.2s; white-space: nowrap;
+      clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%);
+    }
+    .btn-submit-fib:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,240,255,0.3); }
+    .btn-submit-fib:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    /* ── ANSWER FEEDBACK ── */
+    .answer-feedback {
+      display: none; padding: 0.75rem 1rem; margin-top: 0.75rem;
+      font-family: 'Share Tech Mono', monospace; font-size: 0.78rem; letter-spacing: 0.05em;
+      border: 1px solid; line-height: 1.5;
+    }
+    .answer-feedback.correct { border-color: var(--green, #00ff9f); background: rgba(0,255,159,0.08); color: var(--green, #00ff9f); display: block; }
+    .answer-feedback.wrong   { border-color: var(--magenta, #ff003c); background: rgba(255,0,60,0.08); color: var(--magenta, #ff003c); display: block; }
+
+    /* ── NEXT BUTTON ── */
+    .btn-next {
+      display: none; width: 100%; padding: 0.9rem;
+      background: linear-gradient(135deg, var(--violet, #7b00ff), var(--magenta, #ff003c));
+      border: none; color: #fff; font-family: 'Orbitron', monospace;
+      font-size: 0.82rem; font-weight: 700; letter-spacing: 0.2em; cursor: pointer;
+      clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+      transition: all 0.2s;
+    }
+    .btn-next:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(123,0,255,0.4); }
+    .btn-next.visible { display: block; }
+
+    /* ── RESULTS SCREEN ── */
+    .results-header { text-align: center; padding: 2rem 0 1.5rem; }
+    .results-icon { font-size: 3.5rem; margin-bottom: 0.75rem; animation: resultPop 0.5s ease-out; }
+    @keyframes resultPop { 0% { transform: scale(0); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }
+    .results-title { font-family: 'Orbitron', monospace; font-size: 1.5rem; font-weight: 900; margin-bottom: 0.4rem; letter-spacing: 0.1em; }
+    .results-sub { font-family: 'Share Tech Mono', monospace; font-size: 0.8rem; color: var(--text-muted, rgba(255,255,255,0.4)); }
+
+    .results-score-panel {
+      background: var(--panel-bg, rgba(10,9,22,0.8)); border: 1px solid var(--border-color, rgba(255,255,255,0.08));
+      padding: 2rem; margin: 1.5rem 0; display: flex; gap: 2rem; align-items: center;
+      clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+    }
+    .score-big { font-family: 'Orbitron', monospace; font-size: 3.5rem; font-weight: 900; line-height: 1; white-space: nowrap; }
+    .score-big span { font-size: 1.5rem; opacity: 0.5; }
+    .score-details { flex: 1; }
+    .score-row { display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-family: 'Share Tech Mono', monospace; font-size: 0.78rem; color: var(--text-muted, rgba(255,255,255,0.4)); }
+    .score-row:last-child { border-bottom: none; }
+    .score-row strong { color: var(--text-primary, #e8e5ff); }
+
+    .question-review { margin: 1.5rem 0; }
+    .review-title { font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; color: var(--text-muted, rgba(255,255,255,0.4)); letter-spacing: 0.3em; text-transform: uppercase; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+    .review-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border-color, rgba(255,255,255,0.08)), transparent); }
+    .review-item { display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .review-item:last-child { border-bottom: none; }
+    .review-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+    .review-dot.correct { background: var(--green, #00ff9f); box-shadow: 0 0 4px var(--green, #00ff9f); }
+    .review-dot.wrong { background: var(--magenta, #ff003c); box-shadow: 0 0 4px var(--magenta, #ff003c); }
+    .review-q { font-family: 'Share Tech Mono', monospace; font-size: 0.73rem; color: var(--text-muted, rgba(255,255,255,0.4)); flex: 1; line-height: 1.5; }
+    .review-q strong { color: var(--text-primary, #e8e5ff); display: block; margin-bottom: 0.2rem; }
+    .review-answer { font-size: 0.7rem; }
+
+    .results-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1.5rem; }
+    .btn-claim-xp {
+      padding: 0.9rem; border: none; cursor: pointer;
+      font-family: 'Orbitron', monospace; font-size: 0.8rem; font-weight: 700;
+      letter-spacing: 0.2em; transition: all 0.2s;
+      clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+    }
+    .btn-claim-xp:hover { transform: translateY(-1px); }
+    .btn-claim-xp:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .btn-back-hub {
+      padding: 0.9rem; background: transparent;
+      border: 1px solid var(--border-color, rgba(255,255,255,0.08));
+      color: var(--text-muted, rgba(255,255,255,0.4)); font-family: 'Orbitron', monospace;
+      font-size: 0.8rem; font-weight: 700; letter-spacing: 0.2em; cursor: pointer;
+      transition: all 0.2s;
+      clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+    }
+    .btn-back-hub:hover { border-color: var(--cyan, #00f0ff); color: var(--cyan, #00f0ff); }
+
+    .already-completed-note { font-family: 'Share Tech Mono', monospace; font-size: 0.72rem; color: var(--text-muted, rgba(255,255,255,0.4)); text-align: center; padding: 0.75rem; border: 1px solid rgba(255,255,255,0.06); letter-spacing: 0.05em; margin-bottom: 0.75rem; }
+    .already-completed-note span { color: var(--green, #00ff9f); }
+  </style>
+</head>
+<body>
+
+<!-- Loading -->
+<div class="loading-screen" id="loading-screen">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">LOADING KNOWLEDGE BASE...</div>
+</div>
+
+<!-- Nav -->
+<nav class="topnav" id="topnav" style="display:none;">
+  <a class="nav-logo" href="dashboard.html">CIPHER<span>://</span>HTML</a>
+  <div class="nav-right">
+    <a class="nav-link" href="dashboard.html">DASHBOARD</a>
+    <a class="nav-link" href="profile.html">PROFILE</a>
+    <button class="btn-logout" onclick="logout()">DISCONNECT</button>
+  </div>
+</nav>
+
+<div class="page" id="main-content" style="display:none;">
+
+  <!-- ── SCREEN: HUB ── -->
+  <div class="screen active" id="screen-hub">
+    <div class="page-title">KNOWLEDGE BASE</div>
+    <h1 class="page-heading">CIPHER <span>://</span> QUIZ</h1>
+    <p class="page-sub">Test your recall across all four tiers. Each quiz is 10 questions. Earn up to 150 XP per tier — 100 for answers, 50 bonus for scoring 80% or higher. XP is awarded once per tier.</p>
+
+    <div class="xp-summary">
+      <span class="xp-label">CURRENT XP</span>
+      <strong id="hub-xp">0</strong>
+      <div class="xp-potential">QUIZ POTENTIAL <span>+600 XP</span></div>
+    </div>
+
+    <div class="tier-grid" id="tier-grid">
+      <!-- Built by JS -->
+    </div>
+  </div>
+
+  <!-- ── SCREEN: QUIZ ── -->
+  <div class="screen" id="screen-quiz">
+    <div class="quiz-header">
+      <div class="quiz-tier-label" id="quiz-tier-label">GHOST TIER</div>
+      <div class="quiz-progress-row">
+        <div class="quiz-q-counter" id="quiz-q-counter">QUESTION 1 OF 10</div>
+        <div class="quiz-xp-tally" id="quiz-xp-tally">+0 XP</div>
+      </div>
+      <div class="quiz-progress-bar">
+        <div class="quiz-progress-fill" id="quiz-progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="question-panel" id="question-panel">
+      <div class="q-type-badge" id="q-type-badge">MULTIPLE CHOICE</div>
+      <div class="q-text" id="q-text"></div>
+    </div>
+
+    <div id="options-container"></div>
+    <div class="answer-feedback" id="answer-feedback"></div>
+    <button class="btn-next" id="btn-next" onclick="nextQuestion()">NEXT QUESTION →</button>
+  </div>
+
+  <!-- ── SCREEN: RESULTS ── -->
+  <div class="screen" id="screen-results">
+    <div class="results-header">
+      <div class="results-icon" id="results-icon">◈</div>
+      <div class="results-title" id="results-title">MISSION COMPLETE</div>
+      <div class="results-sub" id="results-sub">Knowledge verified.</div>
+    </div>
+
+    <div class="results-score-panel" id="results-score-panel">
+      <div class="score-big" id="score-big">0<span>/10</span></div>
+      <div class="score-details">
+        <div class="score-row"><span>Correct Answers</span><strong id="res-correct">0</strong></div>
+        <div class="score-row"><span>Answer XP</span><strong id="res-answer-xp">0 XP</strong></div>
+        <div class="score-row"><span>Accuracy Bonus</span><strong id="res-bonus-xp">0 XP</strong></div>
+        <div class="score-row"><span>Total Earned</span><strong id="res-total-xp" style="color:var(--cyan)">0 XP</strong></div>
+      </div>
+    </div>
+
+    <div class="question-review">
+      <div class="review-title">ANSWER BREAKDOWN</div>
+      <div id="review-list"></div>
+    </div>
+
+    <div id="already-completed-note" style="display:none;">
+      <div class="already-completed-note">You already earned XP for this quiz. <span>Replay is free — no XP awarded again.</span></div>
+    </div>
+
+    <div class="results-actions">
+      <button class="btn-claim-xp" id="btn-claim-xp" onclick="claimXP()">CLAIM XP →</button>
+      <button class="btn-back-hub" onclick="backToHub()">← BACK TO HUB</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script type="module">
+import { FIREBASE_CONFIG } from './js/firebase-config.js';
+
+firebase.initializeApp(FIREBASE_CONFIG);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+// ── QUIZ DATA ──────────────────────────────────────────────────────────────
+const QUIZ_DATA = {
+  ghost: {
+    tierId: 'ghost', tierName: 'GHOST', color: '#8880b8',
+    subtitle: 'Protocol Initiate',
+    requiredLessons: ['L01','L02','L03','L04','L05'],
+    questions: [
+      { type:'mc', q:'What does HTML stand for?',
+        opts:['HyperText Markup Language','HighText Machine Language','Hyperlink Text Modeling Language','HyperTransfer Markup Logic'], answer:0 },
+      { type:'mc', q:'Which heading tag creates the LARGEST text?',
+        opts:['h6','h3','h1','head'], answer:2 },
+      { type:'fib', q:'The <code>___</code> attribute on an image tag provides alternative text for screen readers and failed loads.',
+        answers:['alt'] },
+      { type:'mc', q:'Which is the correct HTML5 DOCTYPE declaration?',
+        opts:['<!DOCTYPE HTML5>','<!HTML DOCTYPE>','<!DOCTYPE html>','<DOCTYPE html>'], answer:2 },
+      { type:'mc', q:'Which tag creates a hyperlink in HTML?',
+        opts:['<link>','<href>','<nav>','<a>'], answer:3 },
+      { type:'mc', q:'Which attribute and value opens a link in a new browser tab?',
+        opts:['open="new"','rel="newtab"','href="_new"','target="_blank"'], answer:3 },
+      { type:'fib', q:'The <code>&lt;img&gt;</code> tag is ___-closing — it does not need a separate closing tag.',
+        answers:['self','self-closing'] },
+      { type:'mc', q:'Where does the <code>&lt;title&gt;</code> element belong in an HTML document?',
+        opts:['Inside <body>','Inside <header>','Inside <head>','Anywhere in the document'], answer:2 },
+      { type:'mc', q:'Which tag makes text italic AND semantically signals it is emphasized?',
+        opts:['<i>','<italic>','<style>','<em>'], answer:3 },
+      { type:'fib', q:'The <code>&lt;strong&gt;</code> tag makes text bold AND signals it is semantically ___.',
+        answers:['important'] }
+    ]
+  },
+  runner: {
+    tierId: 'runner', tierName: 'RUNNER', color: '#00f0ff',
+    subtitle: 'Protocol Operative',
+    requiredLessons: ['L06','L07','L08','L09','L10'],
+    questions: [
+      { type:'mc', q:'Which tag creates an unordered (bulleted) list?',
+        opts:['<ol>','<li>','<ul>','<list>'], answer:2 },
+      { type:'mc', q:'In an HTML table, which tag defines a single row?',
+        opts:['<td>','<th>','<row>','<tr>'], answer:3 },
+      { type:'mc', q:'Which input type triggers built-in email format validation in browsers?',
+        opts:['type="text"','type="mail"','type="email"','type="address"'], answer:2 },
+      { type:'fib', q:'The semantic HTML5 element for the primary navigation of a page is <code>&lt;___&gt;</code>.',
+        answers:['nav'] },
+      { type:'mc', q:'Which of these is a semantic HTML5 element (not a generic container)?',
+        opts:['<box>','<container>','<article>','<wrapper>'], answer:2 },
+      { type:'mc', q:'<code>&lt;div&gt;</code> is a ___ element — it starts on a new line and takes full width.',
+        opts:['inline','flex','grid','block'], answer:3 },
+      { type:'mc', q:'Which HTML attribute makes a form field mandatory to fill in?',
+        opts:['mandatory','must-fill','required','validate'], answer:2 },
+      { type:'mc', q:'What does the <code>colspan</code> attribute do on a table cell?',
+        opts:['Sets the cell\'s background color','Defines the column\'s pixel width','Copies content from another column','Makes the cell span across multiple columns'], answer:3 },
+      { type:'fib', q:'On a webpage, <code>id</code> attributes must be ___ — no two elements can share the same value.',
+        answers:['unique'] },
+      { type:'mc', q:'Which tag creates a definition list in HTML?',
+        opts:['<ul>','<ol>','<dl>','<def>'], answer:2 }
+    ]
+  },
+  hacker: {
+    tierId: 'hacker', tierName: 'HACKER', color: '#7b00ff',
+    subtitle: 'System Infiltrator',
+    requiredLessons: ['L11','L12','L13','L14','L15'],
+    questions: [
+      { type:'mc', q:'Which CSS property changes the color of text?',
+        opts:['text-color','font-color','foreground','color'], answer:3 },
+      { type:'fib', q:'In CSS, <code>.classname { }</code> uses a ___ selector.',
+        answers:['class'] },
+      { type:'mc', q:'Which CSS unit is relative to the ROOT element\'s font size?',
+        opts:['em','px','vh','rem'], answer:3 },
+      { type:'mc', q:'Which CSS declaration enables Flexbox on a container element?',
+        opts:['flex: true','layout: flex','position: flex','display: flex'], answer:3 },
+      { type:'fib', q:'<code>@media (max-width: 768px) { }</code> is called a ___ query.',
+        answers:['media'] },
+      { type:'mc', q:'Which CSS property controls spacing INSIDE an element, between content and its border?',
+        opts:['margin','border','spacing','padding'], answer:3 },
+      { type:'mc', q:'CSS linear gradients are applied using which property?',
+        opts:['color','gradient','fill','background'], answer:3 },
+      { type:'mc', q:'Which Flexbox property aligns items along the CROSS axis?',
+        opts:['justify-content','flex-direction','flex-wrap','align-items'], answer:3 },
+      { type:'fib', q:'In <code>rgba(255, 0, 0, 0.5)</code>, the last value controls the ___ of the color.',
+        answers:['opacity','transparency','alpha'] },
+      { type:'mc', q:'Which CSS property smoothly animates changes to other properties over time?',
+        opts:['animation','transform','motion','transition'], answer:3 }
+    ]
+  },
+  netrunner: {
+    tierId: 'netrunner', tierName: 'NETRUNNER', color: '#ff003c',
+    subtitle: 'Elite Operator',
+    requiredLessons: ['L16','L17','L18','L19','L20'],
+    questions: [
+      { type:'mc', q:'Which method selects a DOM element by its <code>id</code> attribute?',
+        opts:['document.querySelector()','document.getElement()','document.getElementById()','document.selectId()'], answer:2 },
+      { type:'fib', q:'In <code>element.addEventListener(\'click\', fn)</code>, the first argument <code>\'click\'</code> is called the event ___.',
+        answers:['type','name'] },
+      { type:'mc', q:'Which method stops a form from performing its default page-reload on submit?',
+        opts:['event.stopPropagation()','event.cancel()','event.halt()','event.preventDefault()'], answer:3 },
+      { type:'mc', q:'<code>@keyframes</code> in CSS is used to define:',
+        opts:['Media breakpoints','Font declarations','Grid templates','Animations'], answer:3 },
+      { type:'fib', q:'<code>localStorage.setItem(\'key\', \'value\')</code> stores data that ___ when the browser is closed.',
+        answers:['persists','survives','remains'] },
+      { type:'mc', q:'Which HTML5 attribute enforces a minimum character count on a text input?',
+        opts:['min','validate','length','minlength'], answer:3 },
+      { type:'mc', q:'What does DOM stand for?',
+        opts:['Dynamic Object Method','Data Object Map','Display Object Mode','Document Object Model'], answer:3 },
+      { type:'mc', q:'<code>document.querySelector(\'.card\')</code> selects elements by:',
+        opts:['ID','Tag name','Attribute','Class'], answer:3 },
+      { type:'fib', q:'The CSS property <code>transform: rotate(45deg)</code> rotates an element ___ degrees.',
+        answers:['45'] },
+      { type:'mc', q:'In the L20 capstone project, which of these is NOT a requirement?',
+        opts:['Semantic <nav> with jump links','Flexbox layout','CSS gradient','PHP backend processing'], answer:3 }
+    ]
+  }
+};
+
+const TIER_ORDER = ['ghost','runner','hacker','netrunner'];
+const TIER_DESCRIPTIONS = {
+  ghost:      'L01–L05 · HTML fundamentals, tags, structure, links & images',
+  runner:     'L06–L10 · Lists, tables, forms, semantics & the box model',
+  hacker:     'L11–L15 · CSS styling, colors, flexbox & responsive design',
+  netrunner:  'L16–L20 · Animations, JavaScript DOM, events, validation & capstone'
+};
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let userData     = null;
+let currentTier  = null;
+let questions    = [];
+let currentIndex = 0;
+let answers      = [];   // { correct: bool, userAnswer: str, correctAnswer: str, qText: str }
+let answered     = false;
+let xpThisRound  = 0;
+
+// ── AUTH ───────────────────────────────────────────────────────────────────
+auth.onAuthStateChanged(async user => {
+  if (!user) { window.location.href = 'index.html'; return; }
+  try {
+    const doc = await db.collection('users').doc(user.uid).get();
+    if (!doc.exists) { window.location.href = 'index.html'; return; }
+    userData = { uid: user.uid, ...doc.data() };
+    renderHub();
+    document.getElementById('loading-screen').style.display = 'none';
+    document.getElementById('topnav').style.display = '';
+    document.getElementById('main-content').style.display = '';
+  } catch(err) {
+    console.error(err);
+    document.getElementById('loading-screen').querySelector('.loading-text').textContent = 'CONNECTION ERROR';
+  }
+});
+
+// ── RENDER HUB ─────────────────────────────────────────────────────────────
+function renderHub() {
+  document.getElementById('hub-xp').textContent = (userData.xp || 0);
+  const completed   = userData.completedLessons   || [];
+  const quizDone    = userData.quizzesCompleted    || [];
+  const quizScores  = userData.quizScores          || {};
+
+  let html = '';
+  TIER_ORDER.forEach(tid => {
+    const q     = QUIZ_DATA[tid];
+    const tierComplete = q.requiredLessons.every(id => completed.includes(id));
+    const done  = quizDone.includes(tid);
+    const score = quizScores[tid];
+    const pct   = done && score ? Math.round((score.correct / 10) * 100) : 0;
+
+    const borderCol = tierComplete ? q.color : 'rgba(255,255,255,0.08)';
+    const glowCol   = tierComplete ? q.color + '22' : 'transparent';
+
+    let statusIcon = tierComplete ? (done ? '◈' : '▶') : '⬡';
+    let badgeStyle = `color:${q.color};border-color:${q.color};`;
+
+    html += `
+      <div class="tier-card ${tierComplete ? '' : 'locked'} ${done ? 'completed' : ''}"
+           style="border-top:2px solid ${borderCol};background:linear-gradient(135deg,${glowCol} 0%,transparent 60%)"
+           onclick="${tierComplete ? `startQuiz('${tid}')` : ''}">
+        <div class="tier-card-header">
+          <div class="tier-badge" style="${badgeStyle}">${q.tierName}</div>
+          <div class="tier-status-icon">${statusIcon}</div>
+        </div>
+        <div class="tier-name" style="color:${q.color};text-shadow:0 0 10px ${q.color}55">${q.tierName}</div>
+        <div class="tier-desc">${TIER_DESCRIPTIONS[tid]}</div>
+        <div class="tier-meta">
+          <div class="tier-meta-item">QUESTIONS <span>10</span></div>
+          <div class="tier-meta-item">MAX XP <span style="color:${q.color}">+150</span></div>
+          ${done ? `<div class="tier-meta-item">BEST <span style="color:${q.color}">${score.correct}/10</span></div>` : ''}
+        </div>
+        ${done ? `
+          <div class="tier-score-bar">
+            <div class="tier-score-fill" style="width:${pct}%;background:${q.color}"></div>
+          </div>
+          <div class="tier-score-label">
+            <span>ACCURACY</span><span style="color:${q.color}">${pct}%</span>
+          </div>
+        ` : ''}
+        <div style="margin-top:1rem;">
+          ${tierComplete
+            ? `<button class="btn-start-quiz" style="background:linear-gradient(135deg,${q.color},${q.color}99);color:#03020a" onclick="event.stopPropagation();startQuiz('${tid}')">${done ? 'REPLAY' : 'START QUIZ'} →</button>`
+            : `<div class="locked-msg">⬡ COMPLETE ${q.tierName} TIER TO UNLOCK</div>`
+          }
+        </div>
+      </div>
+    `;
+  });
+
+  document.getElementById('tier-grid').innerHTML = html;
+}
+
+// ── START QUIZ ─────────────────────────────────────────────────────────────
+window.startQuiz = function(tierId) {
+  currentTier  = tierId;
+  questions    = QUIZ_DATA[tierId].questions;
+  currentIndex = 0;
+  answers      = [];
+  xpThisRound  = 0;
+
+  showScreen('screen-quiz');
+  renderQuestion();
+};
+
+// ── RENDER QUESTION ────────────────────────────────────────────────────────
+function renderQuestion() {
+  answered = false;
+  const q        = questions[currentIndex];
+  const tierData = QUIZ_DATA[currentTier];
+  const total    = questions.length;
+  const pct      = Math.round((currentIndex / total) * 100);
+
+  document.getElementById('quiz-tier-label').textContent = tierData.tierName + ' TIER · ' + tierData.subtitle;
+  document.getElementById('quiz-tier-label').style.color = tierData.color;
+  document.getElementById('quiz-q-counter').textContent  = `QUESTION ${currentIndex + 1} OF ${total}`;
+  document.getElementById('quiz-xp-tally').textContent   = `+${xpThisRound} XP`;
+  document.getElementById('quiz-progress-fill').style.width = pct + '%';
+  document.getElementById('quiz-progress-fill').style.background = tierData.color;
+  document.getElementById('q-type-badge').textContent = q.type === 'mc' ? 'MULTIPLE CHOICE' : 'FILL IN THE BLANK';
+  document.getElementById('q-text').innerHTML = q.q;
+  document.getElementById('answer-feedback').className = 'answer-feedback';
+  document.getElementById('answer-feedback').textContent = '';
+  document.getElementById('btn-next').classList.remove('visible');
+
+  if (q.type === 'mc') renderMC(q);
+  else renderFIB(q);
+}
+
+function renderMC(q) {
+  const letters = ['A','B','C','D'];
+  let html = '<div class="options-grid">';
+  q.opts.forEach((opt, i) => {
+    html += `
+      <button class="option-btn" onclick="selectMC(${i})">
+        <span class="opt-letter">${letters[i]}</span>${opt}
+      </button>`;
+  });
+  html += '</div>';
+  document.getElementById('options-container').innerHTML = html;
+}
+
+function renderFIB(q) {
+  document.getElementById('options-container').innerHTML = `
+    <div class="fib-wrapper">
+      <input class="fib-input" id="fib-input" type="text" placeholder="Type your answer..." autocomplete="off" spellcheck="false">
+      <button class="btn-submit-fib" id="btn-fib-submit" onclick="submitFIB()">SUBMIT</button>
+    </div>`;
+  document.getElementById('fib-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitFIB();
+  });
+  document.getElementById('fib-input').focus();
+}
+
+// ── ANSWER: MC ─────────────────────────────────────────────────────────────
+window.selectMC = function(selected) {
+  if (answered) return;
+  answered = true;
+  const q       = questions[currentIndex];
+  const correct = selected === q.answer;
+  const xp      = correct ? 10 : 0;
+  xpThisRound  += xp;
+
+  const btns = document.querySelectorAll('.option-btn');
+  btns.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.answer)  btn.classList.add('correct');
+    if (i === selected && !correct) btn.classList.add('wrong');
+  });
+
+  showFeedback(correct, q.opts[q.answer]);
+  answers.push({ correct, qText: stripHTML(q.q), userAnswer: q.opts[selected], correctAnswer: q.opts[q.answer] });
+  document.getElementById('quiz-xp-tally').textContent = `+${xpThisRound} XP`;
+  document.getElementById('btn-next').classList.add('visible');
+};
+
+// ── ANSWER: FIB ────────────────────────────────────────────────────────────
+window.submitFIB = function() {
+  if (answered) return;
+  const input   = document.getElementById('fib-input');
+  const val     = input.value.trim().toLowerCase();
+  if (!val) return;
+  answered = true;
+
+  const q       = questions[currentIndex];
+  const correct = q.answers.map(a => a.toLowerCase()).includes(val);
+  const xp      = correct ? 10 : 0;
+  xpThisRound  += xp;
+
+  input.classList.add(correct ? 'correct' : 'wrong');
+  input.disabled = true;
+  document.getElementById('btn-fib-submit').disabled = true;
+
+  showFeedback(correct, q.answers[0]);
+  answers.push({ correct, qText: stripHTML(q.q), userAnswer: val, correctAnswer: q.answers[0] });
+  document.getElementById('quiz-xp-tally').textContent = `+${xpThisRound} XP`;
+  document.getElementById('btn-next').classList.add('visible');
+};
+
+function showFeedback(correct, correctAnswer) {
+  const el = document.getElementById('answer-feedback');
+  if (correct) {
+    el.className = 'answer-feedback correct';
+    el.textContent = '✓ CORRECT — +10 XP';
+  } else {
+    el.className = 'answer-feedback wrong';
+    el.textContent = `✗ INCORRECT — Correct answer: ${correctAnswer}`;
+  }
+}
+
+// ── NEXT QUESTION ──────────────────────────────────────────────────────────
+window.nextQuestion = function() {
+  currentIndex++;
+  if (currentIndex >= questions.length) showResults();
+  else renderQuestion();
+};
+
+// ── RESULTS ────────────────────────────────────────────────────────────────
+function showResults() {
+  const correct    = answers.filter(a => a.correct).length;
+  const answerXP   = correct * 10;
+  const bonusXP    = correct >= 8 ? 50 : 0;
+  const totalXP    = answerXP + bonusXP;
+  const pct        = Math.round((correct / 10) * 100);
+  const tierData   = QUIZ_DATA[currentTier];
+  const alreadyDone = (userData.quizzesCompleted || []).includes(currentTier);
+
+  // Icon + title
+  let icon, title, sub;
+  if (correct === 10) { icon = '★'; title = 'PERFECT RUN'; sub = 'Flawless knowledge. Absolute operator.'; }
+  else if (correct >= 8) { icon = '◈'; title = 'MISSION CLEARED'; sub = 'High accuracy. Bonus XP awarded.'; }
+  else if (correct >= 6) { icon = '▶'; title = 'MISSION COMPLETE'; sub = 'Solid run. Review the misses.'; }
+  else { icon = '⬡'; title = 'SIGNAL WEAK'; sub = 'Review the lessons and retry.'; }
+
+  document.getElementById('results-icon').textContent = icon;
+  document.getElementById('results-icon').style.color = tierData.color;
+  document.getElementById('results-title').textContent = title;
+  document.getElementById('results-title').style.color = tierData.color;
+  document.getElementById('results-sub').textContent = sub;
+  document.getElementById('score-big').innerHTML = `${correct}<span>/10</span>`;
+  document.getElementById('score-big').style.color = tierData.color;
+  document.getElementById('res-correct').textContent = `${correct} / 10`;
+  document.getElementById('res-answer-xp').textContent = `+${answerXP} XP`;
+  document.getElementById('res-bonus-xp').textContent = bonusXP > 0 ? `+${bonusXP} XP (80%+ bonus)` : '—';
+  document.getElementById('res-total-xp').textContent = `+${totalXP} XP`;
+
+  // Review list
+  let reviewHtml = '';
+  answers.forEach((a, i) => {
+    reviewHtml += `
+      <div class="review-item">
+        <div class="review-dot ${a.correct ? 'correct' : 'wrong'}"></div>
+        <div class="review-q">
+          <strong>Q${i+1}: ${a.qText}</strong>
+          ${a.correct
+            ? `<span class="review-answer" style="color:var(--green)">✓ ${a.userAnswer}</span>`
+            : `<span class="review-answer" style="color:var(--magenta)">✗ You said: "${a.userAnswer}" — Correct: "${a.correctAnswer}"</span>`
+          }
+        </div>
+      </div>`;
+  });
+  document.getElementById('review-list').innerHTML = reviewHtml;
+
+  // Claim XP button
+  const claimBtn = document.getElementById('btn-claim-xp');
+  claimBtn.style.background = `linear-gradient(135deg, ${tierData.color}, ${tierData.color}88)`;
+  claimBtn.style.color = '#03020a';
+  const alreadyNote = document.getElementById('already-completed-note');
+
+  if (alreadyDone) {
+    claimBtn.disabled = true;
+    claimBtn.textContent = 'XP ALREADY CLAIMED';
+    alreadyNote.style.display = 'block';
+  } else {
+    claimBtn.disabled = false;
+    claimBtn.textContent = `CLAIM +${totalXP} XP →`;
+    alreadyNote.style.display = 'none';
+    // Store for claim
+    claimBtn.dataset.xp = totalXP;
+    claimBtn.dataset.correct = correct;
+  }
+
+  showScreen('screen-results');
+}
+
+// ── CLAIM XP ───────────────────────────────────────────────────────────────
+window.claimXP = async function() {
+  const btn       = document.getElementById('btn-claim-xp');
+  const xpEarned  = parseInt(btn.dataset.xp);
+  const correct   = parseInt(btn.dataset.correct);
+  btn.disabled    = true;
+  btn.textContent = 'SAVING...';
+
+  try {
+    const scoreUpdate = {};
+    scoreUpdate[`quizScores.${currentTier}`] = { correct, total: 10, xp: xpEarned, completedAt: new Date().toISOString() };
+
+    await db.collection('users').doc(userData.uid).update({
+      xp: firebase.firestore.FieldValue.increment(xpEarned),
+      quizzesCompleted: firebase.firestore.FieldValue.arrayUnion(currentTier),
+      ...scoreUpdate
+    });
+
+    // Update local state
+    userData.xp = (userData.xp || 0) + xpEarned;
+    if (!userData.quizzesCompleted) userData.quizzesCompleted = [];
+    userData.quizzesCompleted.push(currentTier);
+    if (!userData.quizScores) userData.quizScores = {};
+    userData.quizScores[currentTier] = { correct, total: 10, xp: xpEarned };
+
+    btn.textContent = '✓ XP CLAIMED!';
+    btn.style.background = 'rgba(0,255,159,0.15)';
+    btn.style.color = 'var(--green)';
+    btn.style.border = '1px solid var(--green)';
+
+    document.getElementById('already-completed-note').style.display = 'block';
+    document.getElementById('already-completed-note').innerHTML =
+      `<div class="already-completed-note"><span>+${xpEarned} XP added to your account.</span> Return to dashboard to see your updated total.</div>`;
+
+  } catch(err) {
+    console.error(err);
+    btn.disabled = false;
+    btn.textContent = 'ERROR — RETRY';
+  }
+};
+
+// ── BACK TO HUB ────────────────────────────────────────────────────────────
+window.backToHub = function() {
+  renderHub();
+  showScreen('screen-hub');
+};
+
+// ── SCREEN SWITCH ──────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ── UTIL ───────────────────────────────────────────────────────────────────
+function stripHTML(str) {
+  const d = document.createElement('div');
+  d.innerHTML = str;
+  return d.textContent || d.innerText || str;
+}
+
+// ── LOGOUT ─────────────────────────────────────────────────────────────────
+window.logout = async function() {
+  await auth.signOut();
+  window.location.href = 'index.html';
+};
+</script>
+</body>
+</html>
