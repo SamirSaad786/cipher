@@ -1,4 +1,5 @@
 File Structure
+
 cipher-html/
 ├── index.html          # Login page
 ├── register.html       # Invite-based registration
@@ -13,6 +14,7 @@ cipher-html/
 │   ├── curriculum.js       # All 20 lessons, XP, tests
 │   └── nft-art.js          # Procedural SVG NFT generator
 └── firestore.rules     # Paste this into Firebase console
+
 Lesson System Overview
 Tier	Lessons	XP	Color
 GHOST	L01–L05	500	Purple
