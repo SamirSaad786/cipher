@@ -1,0 +1,57 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── USERS COLLECTION ────────────────────────────────────
+    match /users/{userId} {
+
+      // Users can read their own document
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // Users can update their own document (XP, completedLessons, streak, lastActive)
+      // Restricted fields: isAdmin can never be set by users themselves
+      allow update: if request.auth != null
+        && request.auth.uid == userId
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isAdmin', 'email', 'username']);
+
+      // New accounts can be created only during registration (from register.html)
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.isAdmin == false;
+
+      // Admins can read all users
+      allow read: if request.auth != null && isAdmin(request.auth.uid);
+
+      // Admins can update all user fields (including reset)
+      allow update: if request.auth != null && isAdmin(request.auth.uid);
+    }
+
+    // ── INVITES COLLECTION ───────────────────────────────────
+    match /invites/{inviteId} {
+
+      // Anyone authenticated can read invites to verify their code during registration
+      allow read: if request.auth != null;
+
+      // Only admins can create invites
+      allow create: if request.auth != null && isAdmin(request.auth.uid);
+
+      // Admins can update (revoke) any invite
+      // Users can mark an invite as used (during registration) — restricted to setting used=true
+      allow update: if request.auth != null && (
+        isAdmin(request.auth.uid) ||
+        (request.resource.data.used == true && resource.data.used == false &&
+         request.resource.data.diff(resource.data).affectedKeys().hasAll(['used', 'usedBy']))
+      );
+
+      // Only admins can delete invites
+      allow delete: if request.auth != null && isAdmin(request.auth.uid);
+    }
+
+    // ── ADMIN CHECK HELPER ───────────────────────────────────
+    function isAdmin(uid) {
+      return exists(/databases/$(database)/documents/users/$(uid)) &&
+             get(/databases/$(database)/documents/users/$(uid)).data.isAdmin == true;
+    }
+
+  }
+}

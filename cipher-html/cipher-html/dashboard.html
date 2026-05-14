@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CIPHER://HTML — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/cipher.css">
+  <style>
+    /* ── NAV ── */
+    .topnav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(3,2,10,0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 60px;
+    }
+    .nav-logo {
+      font-family: 'Orbitron', monospace; font-size: 1rem; font-weight: 900;
+      color: var(--cyan); text-decoration: none; letter-spacing: 0.2em;
+      text-shadow: 0 0 10px rgba(0,240,255,0.5);
+    }
+    .nav-logo span { color: var(--magenta); }
+    .nav-right { display: flex; align-items: center; gap: 1.5rem; }
+    .nav-username {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.8rem;
+      color: var(--text-muted); letter-spacing: 0.1em;
+    }
+    .nav-username strong { color: var(--cyan); }
+    .nav-xp-pill {
+      background: rgba(0,240,255,0.1); border: 1px solid rgba(0,240,255,0.2);
+      padding: 0.3rem 0.75rem; font-family: 'Orbitron', monospace;
+      font-size: 0.7rem; font-weight: 700; color: var(--cyan);
+      letter-spacing: 0.1em;
+    }
+    .btn-logout {
+      background: transparent; border: 1px solid var(--border-color);
+      color: var(--text-muted); font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem; padding: 0.3rem 0.75rem; cursor: pointer;
+      transition: all 0.2s; letter-spacing: 0.1em;
+    }
+    .btn-logout:hover { border-color: var(--magenta); color: var(--magenta); }
+
+    /* ── LAYOUT ── */
+    .dash-layout {
+      max-width: 1400px; margin: 0 auto;
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      grid-template-rows: auto auto 1fr;
+      gap: 1.5rem;
+    }
+
+    /* ── HERO BANNER ── */
+    .hero-banner {
+      grid-column: 1 / -1;
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-top: 2px solid var(--cyan);
+      padding: 1.5rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 2rem;
+      clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 0 100%);
+    }
+    .hero-welcome { flex: 1; }
+    .hero-welcome .greeting {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.75rem;
+      color: var(--text-muted); letter-spacing: 0.3em; text-transform: uppercase;
+    }
+    .hero-welcome .username-big {
+      font-family: 'Orbitron', monospace; font-size: 2rem; font-weight: 900;
+      color: var(--text-primary); letter-spacing: 0.1em; margin: 0.25rem 0;
+      text-shadow: 0 0 20px rgba(0,240,255,0.2);
+    }
+    .hero-welcome .tier-tag {
+      display: inline-block; padding: 0.2rem 0.75rem;
+      font-family: 'Share Tech Mono', monospace; font-size: 0.75rem;
+      letter-spacing: 0.2em; font-weight: 700; text-transform: uppercase;
+      border: 1px solid; margin-top: 0.25rem;
+    }
+    .hero-stats { display: flex; gap: 2rem; }
+    .hero-stat { text-align: center; }
+    .hero-stat .val {
+      font-family: 'Orbitron', monospace; font-size: 1.8rem; font-weight: 700;
+      color: var(--cyan); display: block;
+      text-shadow: 0 0 10px rgba(0,240,255,0.4);
+    }
+    .hero-stat .lbl {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.65rem;
+      color: var(--text-muted); letter-spacing: 0.2em; text-transform: uppercase;
+    }
+    .hero-xp-block { min-width: 260px; }
+    .xp-label-row {
+      display: flex; justify-content: space-between;
+      font-family: 'Share Tech Mono', monospace; font-size: 0.7rem;
+      color: var(--text-muted); margin-bottom: 0.4rem;
+    }
+    .xp-bar-outer {
+      height: 8px; background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-color); overflow: hidden;
+    }
+    .xp-bar-inner {
+      height: 100%; background: linear-gradient(90deg, var(--cyan), var(--violet));
+      transition: width 1s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 0 0 8px var(--cyan);
+    }
+    .level-label {
+      font-family: 'Orbitron', monospace; font-size: 0.75rem; font-weight: 700;
+      color: var(--text-primary); margin-top: 0.4rem; text-align: right;
+    }
+
+    /* ── SKILL TREE ── */
+    .skill-tree-panel {
+      background: var(--panel-bg); border: 1px solid var(--border-color);
+      padding: 1.5rem; overflow: hidden; position: relative;
+    }
+    .panel-label {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.7rem;
+      color: var(--text-muted); letter-spacing: 0.3em; text-transform: uppercase;
+      margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .panel-label::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(90deg, var(--border-color), transparent);
+    }
+    .tier-section { margin-bottom: 1.5rem; }
+    .tier-header {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .tier-name {
+      font-family: 'Orbitron', monospace; font-size: 0.75rem; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase;
+    }
+    .tier-progress-bar {
+      flex: 1; height: 3px; background: rgba(255,255,255,0.05); overflow: hidden;
+    }
+    .tier-progress-fill { height: 100%; transition: width 1s; }
+    .tier-count {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.65rem;
+      color: var(--text-muted); letter-spacing: 0.1em; white-space: nowrap;
+    }
+    .lessons-grid {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem;
+    }
+    .lesson-node {
+      aspect-ratio: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      border: 1px solid var(--border-color);
+      background: rgba(0,0,0,0.3); cursor: pointer;
+      transition: all 0.2s; position: relative; text-decoration: none;
+      clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%);
+    }
+    .lesson-node:hover:not(.locked) {
+      transform: translateY(-2px);
+    }
+    .lesson-node.completed {
+      background: rgba(0,255,159,0.08);
+      border-color: var(--green);
+      box-shadow: 0 0 8px rgba(0,255,159,0.15);
+    }
+    .lesson-node.current {
+      background: rgba(0,240,255,0.08);
+      border-color: var(--cyan);
+      box-shadow: 0 0 12px rgba(0,240,255,0.2);
+      animation: nodePulse 2s ease-in-out infinite;
+    }
+    @keyframes nodePulse {
+      0%,100% { box-shadow: 0 0 12px rgba(0,240,255,0.2); }
+      50% { box-shadow: 0 0 20px rgba(0,240,255,0.4); }
+    }
+    .lesson-node.locked {
+      opacity: 0.35; cursor: not-allowed;
+      filter: grayscale(1);
+    }
+    .node-num {
+      font-family: 'Orbitron', monospace; font-size: 0.65rem; font-weight: 700;
+      color: var(--text-muted); letter-spacing: 0.05em;
+    }
+    .lesson-node.completed .node-num { color: var(--green); }
+    .lesson-node.current .node-num   { color: var(--cyan); }
+    .node-check {
+      font-size: 0.8rem; margin-top: 2px;
+    }
+    .node-tip {
+      position: absolute; bottom: calc(100% + 6px); left: 50%;
+      transform: translateX(-50%); white-space: nowrap;
+      background: rgba(3,2,10,0.95); border: 1px solid var(--border-color);
+      padding: 0.3rem 0.5rem; font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem; color: var(--text-primary); pointer-events: none;
+      opacity: 0; transition: opacity 0.15s; z-index: 10;
+    }
+    .lesson-node:hover .node-tip { opacity: 1; }
+
+    /* ── SIDEBAR ── */
+    .sidebar { display: flex; flex-direction: column; gap: 1.5rem; }
+
+    /* ── CONTINUE CARD ── */
+    .continue-card {
+      background: var(--panel-bg); border: 1px solid var(--border-color);
+      border-top: 2px solid var(--cyan); padding: 1.5rem;
+      clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+    }
+    .continue-lesson-num {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.7rem;
+      color: var(--cyan); letter-spacing: 0.2em; margin-bottom: 0.25rem;
+    }
+    .continue-lesson-title {
+      font-family: 'Orbitron', monospace; font-size: 1.1rem; font-weight: 700;
+      color: var(--text-primary); margin-bottom: 0.25rem; line-height: 1.2;
+    }
+    .continue-lesson-sub {
+      font-family: 'Rajdhani', sans-serif; font-size: 0.9rem;
+      color: var(--text-muted); margin-bottom: 1rem;
+    }
+    .continue-meta {
+      display: flex; gap: 1rem; margin-bottom: 1.25rem;
+    }
+    .continue-meta-item {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.7rem;
+      color: var(--text-muted); display: flex; align-items: center; gap: 0.3rem;
+    }
+    .continue-meta-item span { color: var(--cyan); font-weight: 700; }
+    .btn-continue {
+      display: block; width: 100%; padding: 0.8rem; text-align: center;
+      background: linear-gradient(135deg, var(--cyan), var(--violet));
+      color: var(--bg-deep); font-family: 'Orbitron', monospace;
+      font-size: 0.8rem; font-weight: 700; letter-spacing: 0.2em;
+      text-decoration: none; text-transform: uppercase;
+      clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+      transition: all 0.2s;
+    }
+    .btn-continue:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,240,255,0.3); }
+    .all-done-msg {
+      text-align: center; padding: 1rem;
+      font-family: 'Orbitron', monospace; font-size: 0.9rem;
+      color: var(--gold); text-shadow: 0 0 10px var(--gold);
+    }
+
+    /* ── STREAK CARD ── */
+    .streak-card {
+      background: var(--panel-bg); border: 1px solid var(--border-color);
+      padding: 1.25rem; display: flex; align-items: center; gap: 1rem;
+    }
+    .streak-icon {
+      font-size: 2rem; line-height: 1;
+      filter: drop-shadow(0 0 8px rgba(255,215,0,0.5));
+    }
+    .streak-info { flex: 1; }
+    .streak-count {
+      font-family: 'Orbitron', monospace; font-size: 1.8rem; font-weight: 900;
+      color: var(--gold); line-height: 1;
+      text-shadow: 0 0 10px rgba(255,215,0,0.4);
+    }
+    .streak-label {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.7rem;
+      color: var(--text-muted); letter-spacing: 0.15em; text-transform: uppercase;
+    }
+    .streak-note {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.65rem;
+      color: var(--text-muted);
+    }
+
+    /* ── NFT GALLERY PREVIEW ── */
+    .nft-preview-panel {
+      background: var(--panel-bg); border: 1px solid var(--border-color);
+      padding: 1.5rem;
+    }
+    .nft-grid-mini {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem;
+      margin-bottom: 1rem;
+    }
+    .nft-mini-card {
+      aspect-ratio: 1; border: 1px solid var(--border-color);
+      overflow: hidden; position: relative; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .nft-mini-card:hover { transform: scale(1.05); border-color: var(--cyan); }
+    .nft-mini-card.locked-nft {
+      background: rgba(255,255,255,0.02);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nft-mini-card.locked-nft::after {
+      content: '⬡'; font-size: 1.2rem; color: rgba(255,255,255,0.1);
+    }
+    .nft-mini-card svg { width: 100%; height: 100%; display: block; }
+    .nft-count-strip {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.72rem;
+      color: var(--text-muted); text-align: center;
+    }
+    .nft-count-strip a {
+      color: var(--cyan); text-decoration: none;
+    }
+    .nft-count-strip a:hover { text-shadow: 0 0 6px var(--cyan); }
+
+    /* ── RECENT ACTIVITY ── */
+    .activity-panel {
+      background: var(--panel-bg); border: 1px solid var(--border-color);
+      padding: 1.5rem;
+    }
+    .activity-item {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-dot {
+      width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+    }
+    .activity-text {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.75rem;
+      color: var(--text-secondary); flex: 1;
+    }
+    .activity-time {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.65rem;
+      color: var(--text-muted);
+    }
+    .no-activity {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.78rem;
+      color: var(--text-muted); text-align: center; padding: 1.5rem 0;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 960px) {
+      .dash-layout { grid-template-columns: 1fr; }
+      .hero-banner { flex-direction: column; align-items: flex-start; }
+      .hero-xp-block { width: 100%; }
+      .hero-stats { justify-content: space-between; width: 100%; }
+    }
+
+    /* ── LOADING ── */
+    .dash-loading {
+      position: fixed; inset: 0; z-index: 999;
+      background: var(--bg-deep); display: flex;
+      align-items: center; justify-content: center;
+      flex-direction: column; gap: 1rem;
+    }
+    .loading-spinner {
+      width: 32px; height: 32px;
+      border: 2px solid rgba(0,240,255,0.2);
+      border-top-color: var(--cyan); border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.8rem;
+      color: var(--text-muted); letter-spacing: 0.2em;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Loading screen -->
+<div class="dash-loading" id="loading-screen">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">LOADING NODE...</div>
+</div>
+
+<!-- NAVIGATION -->
+<nav class="topnav" id="topnav" style="display:none;">
+  <a class="nav-logo" href="dashboard.html">CIPHER<span>://</span>HTML</a>
+  <div class="nav-right">
+    <div class="nav-username">OPERATIVE: <strong id="nav-username">—</strong></div>
+    <div class="nav-xp-pill" id="nav-xp">0 XP</div>
+    <a href="profile.html" style="color:var(--text-muted);font-size:0.8rem;text-decoration:none;font-family:'Share Tech Mono',monospace;">PROFILE</a>
+    <button class="btn-logout" onclick="logout()">DISCONNECT</button>
+  </div>
+</nav>
+
+<main id="main-content" style="display:none;">
+  <div class="dash-layout">
+
+    <!-- HERO BANNER -->
+    <div class="hero-banner">
+      <div class="hero-welcome">
+        <div class="greeting">WELCOME BACK, OPERATIVE</div>
+        <div class="username-big" id="dash-username">—</div>
+        <div class="tier-tag" id="tier-tag" style="color:var(--cyan);border-color:var(--cyan);">GHOST INIT</div>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="val" id="stat-xp">0</span>
+          <span class="lbl">Total XP</span>
+        </div>
+        <div class="hero-stat">
+          <span class="val" id="stat-completed">0</span>
+          <span class="lbl">Lessons Done</span>
+        </div>
+        <div class="hero-stat">
+          <span class="val" id="stat-streak">0</span>
+          <span class="lbl">Day Streak</span>
+        </div>
+        <div class="hero-stat">
+          <span class="val" id="stat-nfts">0</span>
+          <span class="lbl">NFTs Earned</span>
+        </div>
+      </div>
+      <div class="hero-xp-block">
+        <div class="xp-label-row">
+          <span>LEVEL PROGRESS</span>
+          <span id="xp-label">0 / 200 XP</span>
+        </div>
+        <div class="xp-bar-outer">
+          <div class="xp-bar-inner" id="xp-bar-fill" style="width:0%"></div>
+        </div>
+        <div class="level-label" id="level-label">GHOST INIT</div>
+      </div>
+    </div>
+
+    <!-- SKILL TREE -->
+    <div class="skill-tree-panel">
+      <div class="panel-label">SKILL TREE — PROGRESS MAP</div>
+      <div id="skill-tree-content"><!-- Built by JS --></div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+
+      <!-- Continue -->
+      <div class="continue-card" id="continue-card">
+        <div class="panel-label">NEXT MISSION</div>
+        <div id="continue-content">
+          <div class="all-done-msg">ALL MISSIONS COMPLETE<br>⬡ LEGEND STATUS ⬡</div>
+        </div>
+      </div>
+
+      <!-- Streak -->
+      <div class="streak-card">
+        <div class="streak-icon">⚡</div>
+        <div class="streak-info">
+          <div class="streak-count" id="streak-count">0</div>
+          <div class="streak-label">Day Streak</div>
+        </div>
+        <div class="streak-note" id="streak-note">Start coding today!</div>
+      </div>
+
+      <!-- NFT Gallery Preview -->
+      <div class="nft-preview-panel">
+        <div class="panel-label">NFT COLLECTION</div>
+        <div class="nft-grid-mini" id="nft-grid-mini"><!-- Built by JS --></div>
+        <div class="nft-count-strip" id="nft-count-strip">
+          <a href="profile.html">VIEW FULL GALLERY →</a>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="activity-panel">
+        <div class="panel-label">RECENT ACTIVITY</div>
+        <div id="activity-list">
+          <div class="no-activity">No missions logged yet.<br>Start your first lesson.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script type="module">
+  import { FIREBASE_CONFIG } from './js/firebase-config.js';
+  import { CURRICULUM, ALL_LESSONS, getLevelFromXP, getXPProgress, LEVEL_THRESHOLDS } from './js/curriculum.js';
+  import { generateNFTArt } from './js/nft-art.js';
+
+  firebase.initializeApp(FIREBASE_CONFIG);
+  const auth = firebase.auth();
+  const db   = firebase.firestore();
+
+  let userData = null;
+
+  // ── AUTH GUARD ─────────────────────────────────────────────
+  auth.onAuthStateChanged(async user => {
+    if (!user) { window.location.href = 'index.html'; return; }
+
+    try {
+      const doc = await db.collection('users').doc(user.uid).get();
+      if (!doc.exists) { window.location.href = 'index.html'; return; }
+
+      userData = { uid: user.uid, ...doc.data() };
+
+      // Update streak
+      await updateStreak(user.uid);
+
+      // Re-fetch after streak update
+      const fresh = await db.collection('users').doc(user.uid).get();
+      userData = { uid: user.uid, ...fresh.data() };
+
+      renderDashboard();
+      document.getElementById('loading-screen').style.display = 'none';
+      document.getElementById('topnav').style.display = '';
+      document.getElementById('main-content').style.display = '';
+
+    } catch (err) {
+      console.error(err);
+      document.getElementById('loading-screen').querySelector('.loading-text').textContent = 'CONNECTION ERROR';
+    }
+  });
+
+  // ── STREAK UPDATE ──────────────────────────────────────────
+  async function updateStreak(uid) {
+    const doc = await db.collection('users').doc(uid).get();
+    const d = doc.data();
+    const now   = new Date();
+    const last  = d.lastActive ? d.lastActive.toDate() : null;
+    if (!last) {
+      await db.collection('users').doc(uid).update({ streak:1, lastActive: firebase.firestore.FieldValue.serverTimestamp() });
+      return;
+    }
+    const daysDiff = Math.floor((now - last) / (1000*60*60*24));
+    if (daysDiff === 0) return; // same day
+    if (daysDiff === 1) {
+      await db.collection('users').doc(uid).update({ streak: (d.streak||0)+1, lastActive: firebase.firestore.FieldValue.serverTimestamp() });
+    } else {
+      await db.collection('users').doc(uid).update({ streak: 1, lastActive: firebase.firestore.FieldValue.serverTimestamp() });
+    }
+  }
+
+  // ── RENDER DASHBOARD ───────────────────────────────────────
+  function renderDashboard() {
+    const d = userData;
+    const completed = d.completedLessons || [];
+    const xp        = d.xp || 0;
+    const levelInfo = getLevelFromXP(xp);
+    const xpProg    = getXPProgress(xp);
+
+    // Nav
+    document.getElementById('nav-username').textContent = d.username || '—';
+    document.getElementById('nav-xp').textContent = xp + ' XP';
+
+    // Hero
+    document.getElementById('dash-username').textContent = (d.username||'').toUpperCase();
+    document.getElementById('stat-xp').textContent = xp;
+    document.getElementById('stat-completed').textContent = completed.length;
+    document.getElementById('stat-streak').textContent = d.streak || 0;
+    document.getElementById('stat-nfts').textContent = completed.length;
+
+    // Tier tag
+    const tierColors = {ghost:'#8880b8',runner:'#00f0ff',hacker:'#7b00ff',netrunner:'#ff003c'};
+    const currentTier = getCurrentTier(completed);
+    const tierTag = document.getElementById('tier-tag');
+    tierTag.textContent = currentTier.name.toUpperCase();
+    tierTag.style.color = currentTier.color;
+    tierTag.style.borderColor = currentTier.color;
+
+    // XP bar
+    document.getElementById('xp-label').textContent = `${xpProg.current} / ${xpProg.next} XP`;
+    document.getElementById('xp-bar-fill').style.width = xpProg.pct + '%';
+    document.getElementById('level-label').textContent = levelInfo.name;
+
+    // Streak
+    const streak = d.streak || 0;
+    document.getElementById('streak-count').textContent = streak;
+    document.getElementById('streak-note').textContent =
+      streak === 0 ? 'No streak yet — start today!' :
+      streak < 3   ? 'Keep going! Build momentum.' :
+      streak < 7   ? 'You\'re on fire!' : '🔥 Elite consistency!';
+
+    // Skill tree
+    renderSkillTree(completed);
+
+    // Continue card
+    renderContinueCard(completed);
+
+    // NFT mini grid
+    renderNFTGrid(completed);
+
+    // Activity
+    renderActivity(completed);
+  }
+
+  function getCurrentTier(completed) {
+    const tiers = CURRICULUM.tiers;
+    for (let i = tiers.length - 1; i >= 0; i--) {
+      const t = tiers[i];
+      const ids = t.lessons.map(l => l.id);
+      if (ids.some(id => completed.includes(id))) return { name: t.name, color: tierColors[t.id] || '#8880b8' };
+    }
+    return { name: 'GHOST', color: '#8880b8' };
+  }
+
+  const tierColors = { ghost:'#8880b8', runner:'#00f0ff', hacker:'#7b00ff', netrunner:'#ff003c' };
+
+  // ── SKILL TREE ─────────────────────────────────────────────
+  function renderSkillTree(completed) {
+    const container = document.getElementById('skill-tree-content');
+    let html = '';
+
+    CURRICULUM.tiers.forEach(tier => {
+      const lessons       = tier.lessons;
+      const completedCount = lessons.filter(l => completed.includes(l.id)).length;
+      const pct = Math.round((completedCount / lessons.length) * 100);
+      const color = tierColors[tier.id] || '#8880b8';
+
+      html += `
+        <div class="tier-section">
+          <div class="tier-header">
+            <span class="tier-name" style="color:${color}">${tier.name}</span>
+            <div class="tier-progress-bar">
+              <div class="tier-progress-fill" style="width:${pct}%;background:${color};"></div>
+            </div>
+            <span class="tier-count" style="color:${color}">${completedCount}/${lessons.length}</span>
+          </div>
+          <div class="lessons-grid">
+      `;
+
+      lessons.forEach((lesson, i) => {
+        const isDone    = completed.includes(lesson.id);
+        const prevDone  = i === 0 || completed.includes(lessons[i-1].id);
+        // First lesson of first tier always unlocked; otherwise prev must be done
+        const isFirst   = tier.id === 'ghost' && i === 0;
+        const isUnlocked = isFirst || prevDone;
+        const isCurrent  = !isDone && isUnlocked;
+        const isLocked   = !isDone && !isUnlocked;
+
+        const cls = isDone ? 'completed' : isCurrent ? 'current' : 'locked';
+        const icon = isDone ? '◈' : isCurrent ? '▶' : '⬡';
+        const href = isLocked ? '#' : `lesson.html?id=${lesson.id}`;
+
+        html += `
+          <a href="${href}" class="lesson-node ${cls}" ${isLocked?'onclick="return false"':''}>
+            <div class="node-num">${lesson.number}</div>
+            <div class="node-check" style="color:${isDone?'var(--green)':isCurrent?color:'rgba(255,255,255,0.2)'}">${icon}</div>
+            <div class="node-tip">${lesson.title}</div>
+          </a>
+        `;
+      });
+
+      html += '</div></div>';
+    });
+
+    container.innerHTML = html;
+  }
+
+  // ── CONTINUE CARD ──────────────────────────────────────────
+  function renderContinueCard(completed) {
+    const next = findNextLesson(completed);
+    const el   = document.getElementById('continue-content');
+
+    if (!next) {
+      el.innerHTML = '<div class="all-done-msg">ALL 20 MISSIONS COMPLETE<br>⬡ LEGEND STATUS ACHIEVED ⬡</div>';
+      return;
+    }
+
+    const tier   = CURRICULUM.tiers.find(t => t.lessons.some(l => l.id === next.id));
+    const color  = tier ? tierColors[tier.id] : '#00f0ff';
+
+    el.innerHTML = `
+      <div class="continue-lesson-num" style="color:${color}">LESSON ${next.number} · ${tier?.name?.toUpperCase()||''}</div>
+      <div class="continue-lesson-title">${next.title}</div>
+      <div class="continue-lesson-sub">${next.subtitle}</div>
+      <div class="continue-meta">
+        <div class="continue-meta-item">XP <span>+${next.xp}</span></div>
+        <div class="continue-meta-item">TIMER BONUS <span>+${next.timerXpBonus}</span></div>
+        <div class="continue-meta-item">LIMIT <span>${next.timerMinutes}m</span></div>
+      </div>
+      <a class="btn-continue" href="lesson.html?id=${next.id}" style="background:linear-gradient(135deg,${color},var(--violet))">
+        START MISSION →
+      </a>
+    `;
+  }
+
+  function findNextLesson(completed) {
+    for (const tier of CURRICULUM.tiers) {
+      for (const lesson of tier.lessons) {
+        if (!completed.includes(lesson.id)) return lesson;
+      }
+    }
+    return null;
+  }
+
+  // ── NFT MINI GRID ──────────────────────────────────────────
+  function renderNFTGrid(completed) {
+    const grid = document.getElementById('nft-grid-mini');
+    const count = document.getElementById('nft-count-strip');
+    let html = '';
+
+    ALL_LESSONS.slice(0, 8).forEach(lesson => {
+      const tier = CURRICULUM.tiers.find(t => t.lessons.some(l => l.id === lesson.id));
+      const done = completed.includes(lesson.id);
+      if (done) {
+        const svg = generateNFTArt(lesson.id, tier?.id || 'ghost', false);
+        html += `<div class="nft-mini-card" title="${lesson.nftName}">${svg}</div>`;
+      } else {
+        html += `<div class="nft-mini-card locked-nft"></div>`;
+      }
+    });
+
+    grid.innerHTML = html;
+    count.innerHTML = `<span style="color:var(--cyan)">${completed.length}</span> / 20 COLLECTED — <a href="profile.html">VIEW FULL GALLERY →</a>`;
+  }
+
+  // ── ACTIVITY ───────────────────────────────────────────────
+  function renderActivity(completed) {
+    const el = document.getElementById('activity-list');
+    if (!completed.length) return;
+
+    const recent = completed.slice(-5).reverse();
+    const colors = { ghost:'#8880b8', runner:'#00f0ff', hacker:'#7b00ff', netrunner:'#ff003c' };
+    let html = '';
+
+    recent.forEach(id => {
+      const lesson = ALL_LESSONS.find(l => l.id === id);
+      if (!lesson) return;
+      const tier  = CURRICULUM.tiers.find(t => t.lessons.some(l => l.id === id));
+      const color = colors[tier?.id] || '#8880b8';
+      html += `
+        <div class="activity-item">
+          <div class="activity-dot" style="background:${color};box-shadow:0 0 4px ${color}"></div>
+          <div class="activity-text">COMPLETED: ${lesson.title}</div>
+          <div class="activity-time">+${lesson.xp} XP</div>
+        </div>
+      `;
+    });
+
+    el.innerHTML = html;
+  }
+
+  // ── LOGOUT ─────────────────────────────────────────────────
+  window.logout = async function() {
+    await auth.signOut();
+    window.location.href = 'index.html';
+  };
+</script>
+</body>
+</html>

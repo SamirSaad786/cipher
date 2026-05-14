@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CIPHER://HTML — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/cipher.css">
+  <style>
+    .topnav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(3,2,10,0.95); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 2rem; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo { font-family: 'Orbitron', monospace; font-size: 1rem; font-weight: 900;
+      color: var(--gold); text-decoration: none; letter-spacing: 0.2em;
+      text-shadow: 0 0 10px rgba(255,215,0,0.4); }
+    .nav-logo span { color: var(--magenta); }
+    .admin-badge {
+      background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3);
+      color: var(--gold); font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem; padding: 0.25rem 0.75rem; letter-spacing: 0.2em;
+    }
+    .btn-logout { background: transparent; border: 1px solid var(--border-color);
+      color: var(--text-muted); font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem; padding: 0.3rem 0.75rem; cursor: pointer;
+      transition: all 0.2s; letter-spacing: 0.1em; }
+    .btn-logout:hover { border-color: var(--magenta); color: var(--magenta); }
+
+    .admin-layout {
+      max-width: 1300px; margin: 0 auto; padding: 2rem;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;
+    }
+    .full-width { grid-column: 1 / -1; }
+
+    .admin-panel {
+      background: var(--panel-bg); border: 1px solid var(--border-color);
+      padding: 1.5rem;
+    }
+    .admin-panel.gold-border { border-top: 2px solid var(--gold); }
+    .admin-panel.cyan-border { border-top: 2px solid var(--cyan); }
+    .admin-panel.violet-border { border-top: 2px solid var(--violet); }
+
+    .panel-title {
+      font-family: 'Orbitron', monospace; font-size: 0.8rem; font-weight: 700;
+      color: var(--text-primary); letter-spacing: 0.2em; text-transform: uppercase;
+      margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .panel-title::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(90deg, var(--border-color), transparent);
+    }
+
+    /* Form controls */
+    .form-row { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .form-group-sm { flex: 1; min-width: 140px; }
+    .form-group-sm label {
+      display: block; font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem; color: var(--text-muted); letter-spacing: 0.2em;
+      text-transform: uppercase; margin-bottom: 0.35rem;
+    }
+    .form-input-sm {
+      width: 100%; background: rgba(0,0,0,0.5);
+      border: 1px solid var(--border-color); color: var(--text-primary);
+      font-family: 'Share Tech Mono', monospace; font-size: 0.85rem;
+      padding: 0.6rem 0.75rem; outline: none;
+      transition: border-color 0.2s; letter-spacing: 0.05em;
+    }
+    .form-input-sm:focus { border-color: var(--gold); }
+    .form-input-sm::placeholder { color: rgba(255,255,255,0.2); }
+    .btn-admin {
+      padding: 0.6rem 1.25rem;
+      font-family: 'Orbitron', monospace; font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 0.15em; text-transform: uppercase;
+      border: none; cursor: pointer; transition: all 0.2s;
+      clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%);
+      white-space: nowrap; align-self: flex-end;
+    }
+    .btn-admin.gold { background: linear-gradient(135deg, var(--gold), #cc8800); color: #000; }
+    .btn-admin.cyan { background: linear-gradient(135deg, var(--cyan), var(--violet)); color: var(--bg-deep); }
+    .btn-admin.danger { background: rgba(255,0,60,0.15); border: 1px solid var(--magenta); color: var(--magenta); clip-path: none; }
+    .btn-admin:hover { transform: translateY(-1px); opacity: 0.9; }
+    .btn-admin:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    /* Invite code output */
+    .invite-result {
+      display: none; margin-top: 1rem;
+      background: rgba(0,240,255,0.05); border: 1px solid rgba(0,240,255,0.15);
+      padding: 1rem;
+    }
+    .invite-result.visible { display: block; }
+    .invite-code-big {
+      font-family: 'Orbitron', monospace; font-size: 1.4rem; font-weight: 900;
+      color: var(--cyan); letter-spacing: 0.3em; text-align: center; padding: 0.5rem;
+      text-shadow: 0 0 10px rgba(0,240,255,0.4); cursor: pointer;
+    }
+    .invite-meta {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.7rem;
+      color: var(--text-muted); text-align: center; margin-top: 0.5rem;
+    }
+    .invite-link {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.7rem;
+      color: var(--violet); word-break: break-all; margin-top: 0.5rem;
+      text-align: center; cursor: pointer;
+    }
+    .copy-hint {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.65rem;
+      color: var(--green); text-align: center; margin-top: 0.25rem; display: none;
+    }
+
+    /* Data table */
+    .data-table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+    .data-table th {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.65rem;
+      color: var(--text-muted); letter-spacing: 0.2em; text-transform: uppercase;
+      text-align: left; padding: 0.4rem 0.75rem; border-bottom: 1px solid var(--border-color);
+    }
+    .data-table td {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.78rem;
+      color: var(--text-secondary); padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .data-table tr:last-child td { border-bottom: none; }
+    .td-username { color: var(--cyan); font-weight: 700; }
+    .td-xp { color: var(--gold); }
+    .td-lessons { color: var(--green); }
+    .td-streak { color: var(--violet); }
+    .td-invite-used { color: var(--text-muted); }
+    .td-invite-avail { color: var(--green); }
+    .progress-mini {
+      height: 4px; background: rgba(255,255,255,0.05);
+      border-radius: 2px; margin-top: 3px; overflow: hidden; min-width: 80px;
+    }
+    .progress-mini-fill { height: 100%; border-radius: 2px; transition: width 0.5s; }
+
+    .stats-row {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat-card {
+      background: rgba(0,0,0,0.3); border: 1px solid var(--border-color);
+      padding: 1rem; text-align: center;
+    }
+    .stat-val {
+      font-family: 'Orbitron', monospace; font-size: 1.6rem; font-weight: 700;
+      color: var(--cyan); display: block;
+    }
+    .stat-lbl {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.65rem;
+      color: var(--text-muted); letter-spacing: 0.15em; text-transform: uppercase;
+    }
+
+    .empty-state {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.78rem;
+      color: var(--text-muted); text-align: center; padding: 2rem;
+    }
+
+    .error-msg { color: var(--magenta); font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem; margin-top: 0.5rem; }
+    .success-msg { color: var(--green); font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem; margin-top: 0.5rem; }
+
+    .loading { text-align: center; padding: 2rem;
+      font-family: 'Share Tech Mono', monospace; font-size: 0.78rem;
+      color: var(--text-muted); }
+
+    .dash-loading { position:fixed;inset:0;z-index:999;background:var(--bg-deep);
+      display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem; }
+    .spin { width:32px;height:32px;border:2px solid rgba(0,240,255,0.2);
+      border-top-color:var(--cyan);border-radius:50%;animation:spin 0.7s linear infinite; }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .load-txt { font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:var(--text-muted);letter-spacing:0.2em; }
+
+    .toast {
+      position: fixed; bottom: 2rem; right: 2rem; z-index: 500;
+      background: var(--panel-bg); border: 1px solid var(--green);
+      color: var(--green); font-family: 'Share Tech Mono', monospace;
+      font-size: 0.78rem; padding: 0.75rem 1.25rem; letter-spacing: 0.05em;
+      transform: translateY(100px); opacity: 0;
+      transition: all 0.3s; pointer-events: none;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    @media(max-width:900px){
+      .admin-layout { grid-template-columns: 1fr; }
+      .full-width { grid-column: 1; }
+      .stats-row { grid-template-columns: repeat(2,1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="dash-loading" id="loading-screen">
+  <div class="spin"></div>
+  <div class="load-txt">ACCESSING ADMIN NODE...</div>
+</div>
+
+<nav class="topnav" id="topnav" style="display:none">
+  <a class="nav-logo" href="admin.html">CIPHER<span>://</span>HTML <span style="font-size:.65rem;color:var(--gold)">ADMIN</span></a>
+  <div style="display:flex;align-items:center;gap:1rem">
+    <div class="admin-badge">⬡ OPERATOR ACCESS</div>
+    <a href="dashboard.html" style="color:var(--text-muted);font-size:0.75rem;text-decoration:none;font-family:'Share Tech Mono',monospace;">DASHBOARD</a>
+    <button class="btn-logout" onclick="logout()">DISCONNECT</button>
+  </div>
+</nav>
+
+<div id="access-denied" style="display:none;padding:4rem;text-align:center;">
+  <div style="font-family:'Orbitron',monospace;font-size:1.5rem;color:var(--magenta);letter-spacing:0.2em">ACCESS DENIED</div>
+  <div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:var(--text-muted);margin-top:1rem">You are not authorized to access this panel.</div>
+  <a href="dashboard.html" style="color:var(--cyan);font-family:'Share Tech Mono',monospace;font-size:0.8rem;display:inline-block;margin-top:1rem">← Return to Dashboard</a>
+</div>
+
+<main id="admin-main" style="display:none">
+  <div class="admin-layout">
+
+    <!-- Platform Stats -->
+    <div class="admin-panel full-width gold-border">
+      <div class="panel-title">PLATFORM STATS</div>
+      <div class="stats-row">
+        <div class="stat-card"><span class="stat-val" id="st-users">—</span><span class="stat-lbl">Total Users</span></div>
+        <div class="stat-card"><span class="stat-val" id="st-invites">—</span><span class="stat-lbl">Pending Invites</span></div>
+        <div class="stat-card"><span class="stat-val" id="st-completions">—</span><span class="stat-lbl">Lessons Completed</span></div>
+        <div class="stat-card"><span class="stat-val" id="st-avgxp">—</span><span class="stat-lbl">Avg XP / User</span></div>
+      </div>
+    </div>
+
+    <!-- Create Invite -->
+    <div class="admin-panel cyan-border">
+      <div class="panel-title">CREATE INVITE CODE</div>
+      <div class="form-row">
+        <div class="form-group-sm">
+          <label>Username</label>
+          <input class="form-input-sm" id="new-username" type="text"
+            placeholder="their_handle" autocapitalize="none" spellcheck="false">
+        </div>
+        <button class="btn-admin cyan" onclick="createInvite()">GENERATE</button>
+      </div>
+      <div id="create-msg"></div>
+      <div class="invite-result" id="invite-result">
+        <div class="invite-code-big" id="invite-code-display" onclick="copyCode()" title="Click to copy">
+          —
+        </div>
+        <div class="invite-meta" id="invite-meta">—</div>
+        <div class="invite-link" id="invite-link" onclick="copyLink()" title="Click to copy link">—</div>
+        <div class="copy-hint" id="copy-hint">✓ COPIED TO CLIPBOARD</div>
+      </div>
+    </div>
+
+    <!-- Active Invites -->
+    <div class="admin-panel violet-border">
+      <div class="panel-title">PENDING INVITES</div>
+      <div id="invites-table-wrap">
+        <div class="loading">Loading invites...</div>
+      </div>
+    </div>
+
+    <!-- User Roster -->
+    <div class="admin-panel gold-border full-width">
+      <div class="panel-title">USER ROSTER</div>
+      <div style="overflow-x:auto">
+        <div id="users-table-wrap">
+          <div class="loading">Loading users...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="toast" id="toast">✓ Copied!</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script type="module">
+  import { FIREBASE_CONFIG, ADMIN_USERNAME } from './js/firebase-config.js';
+
+  firebase.initializeApp(FIREBASE_CONFIG);
+  const auth = firebase.auth();
+  const db   = firebase.firestore();
+
+  auth.onAuthStateChanged(async user => {
+    if (!user) { window.location.href = 'index.html'; return; }
+
+    const doc = await db.collection('users').doc(user.uid).get();
+    if (!doc.exists || !doc.data().isAdmin) {
+      document.getElementById('loading-screen').style.display = 'none';
+      document.getElementById('topnav').style.display = '';
+      document.getElementById('access-denied').style.display = '';
+      return;
+    }
+
+    document.getElementById('loading-screen').style.display = 'none';
+    document.getElementById('topnav').style.display = '';
+    document.getElementById('admin-main').style.display = '';
+
+    loadData();
+  });
+
+  async function loadData() {
+    await Promise.all([ loadStats(), loadUsers(), loadInvites() ]);
+  }
+
+  async function loadStats() {
+    try {
+      const [usersSnap, invitesSnap] = await Promise.all([
+        db.collection('users').get(),
+        db.collection('invites').where('used','==',false).get()
+      ]);
+
+      let totalLessons = 0, totalXP = 0;
+      usersSnap.forEach(d => {
+        const data = d.data();
+        totalLessons += (data.completedLessons||[]).length;
+        totalXP += data.xp || 0;
+      });
+
+      const userCount = usersSnap.size;
+      document.getElementById('st-users').textContent        = userCount;
+      document.getElementById('st-invites').textContent      = invitesSnap.size;
+      document.getElementById('st-completions').textContent  = totalLessons;
+      document.getElementById('st-avgxp').textContent        = userCount ? Math.round(totalXP/userCount) : 0;
+    } catch (err) { console.error(err); }
+  }
+
+  async function loadUsers() {
+    try {
+      const snap = await db.collection('users').orderBy('xp','desc').get();
+      const el   = document.getElementById('users-table-wrap');
+
+      if (snap.empty) {
+        el.innerHTML = '<div class="empty-state">No users yet.</div>'; return;
+      }
+
+      const tierColors = { ghost:'#8880b8', runner:'#00f0ff', hacker:'#7b00ff', netrunner:'#ff003c' };
+
+      let rows = '';
+      snap.forEach(d => {
+        const u = d.data();
+        const completed = (u.completedLessons||[]).length;
+        const pct = Math.round((completed/20)*100);
+        // Determine current tier
+        let tierColor = '#8880b8', tierName = 'GHOST';
+        if (completed >= 15) { tierName = 'NETRUNNER'; tierColor = '#ff003c'; }
+        else if (completed >= 10) { tierName = 'HACKER'; tierColor = '#7b00ff'; }
+        else if (completed >= 5) { tierName = 'RUNNER'; tierColor = '#00f0ff'; }
+
+        const lastActive = u.lastActive ? new Date(u.lastActive.toDate()).toLocaleDateString() : 'Never';
+
+        rows += `
+          <tr>
+            <td class="td-username">${u.username||'—'}</td>
+            <td class="td-xp">${u.xp||0}</td>
+            <td class="td-lessons">
+              ${completed}/20
+              <div class="progress-mini"><div class="progress-mini-fill" style="width:${pct}%;background:${tierColor}"></div></div>
+            </td>
+            <td style="color:${tierColor};font-family:'Share Tech Mono',monospace;font-size:0.78rem">${tierName}</td>
+            <td class="td-streak">${u.streak||0} 🔥</td>
+            <td style="color:var(--text-muted);font-family:'Share Tech Mono',monospace;font-size:0.75rem">${lastActive}</td>
+            <td>
+              <button class="btn-admin danger" style="font-size:0.6rem;padding:0.3rem 0.6rem"
+                onclick="resetUser('${d.id}','${u.username||''}')">RESET</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      el.innerHTML = `
+        <table class="data-table">
+          <thead><tr>
+            <th>Username</th><th>XP</th><th>Lessons</th><th>Tier</th>
+            <th>Streak</th><th>Last Active</th><th>Action</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    } catch (err) {
+      document.getElementById('users-table-wrap').innerHTML = `<div class="error-msg">Failed to load users: ${err.message}</div>`;
+    }
+  }
+
+  async function loadInvites() {
+    try {
+      const snap = await db.collection('invites').orderBy('createdAt','desc').limit(20).get();
+      const el   = document.getElementById('invites-table-wrap');
+
+      if (snap.empty) {
+        el.innerHTML = '<div class="empty-state">No pending invites. Create one above.</div>'; return;
+      }
+
+      let rows = '';
+      snap.forEach(d => {
+        const inv  = d.data();
+        const used = inv.used;
+        const created = inv.createdAt ? new Date(inv.createdAt.toDate()).toLocaleDateString() : '—';
+        rows += `
+          <tr>
+            <td class="td-username">${inv.username||'—'}</td>
+            <td><span style="font-family:'Orbitron',monospace;font-size:0.8rem;color:var(--cyan);letter-spacing:0.1em">${inv.code}</span></td>
+            <td class="${used?'td-invite-used':'td-invite-avail'}">${used ? 'USED' : 'ACTIVE'}</td>
+            <td style="color:var(--text-muted);font-family:'Share Tech Mono',monospace;font-size:0.75rem">${created}</td>
+            ${!used ? `<td><button class="btn-admin danger" style="font-size:0.6rem;padding:0.3rem 0.6rem" onclick="revokeInvite('${d.id}')">REVOKE</button></td>` : '<td>—</td>'}
+          </tr>
+        `;
+      });
+
+      el.innerHTML = `
+        <table class="data-table">
+          <thead><tr><th>Username</th><th>Code</th><th>Status</th><th>Created</th><th>Action</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    } catch (err) {
+      document.getElementById('invites-table-wrap').innerHTML = `<div class="error-msg">Failed to load invites.</div>`;
+    }
+  }
+
+  // ── CREATE INVITE ──────────────────────────────────────────
+  window.createInvite = async function() {
+    const username = document.getElementById('new-username').value.trim().toLowerCase();
+    const msgEl    = document.getElementById('create-msg');
+    msgEl.innerHTML = '';
+
+    if (!username || username.length < 2) {
+      msgEl.innerHTML = '<div class="error-msg">⚠ Enter a valid username (min 2 chars)</div>'; return;
+    }
+    if (!/^[a-z0-9_]+$/.test(username)) {
+      msgEl.innerHTML = '<div class="error-msg">⚠ Only lowercase letters, numbers, underscores</div>'; return;
+    }
+
+    try {
+      // Check username not already taken
+      const existing = await db.collection('users').where('username','==',username).limit(1).get();
+      if (!existing.empty) {
+        msgEl.innerHTML = '<div class="error-msg">⚠ Username already registered</div>'; return;
+      }
+      // Check no active invite exists
+      const activeInv = await db.collection('invites')
+        .where('username','==',username).where('used','==',false).limit(1).get();
+      if (!activeInv.empty) {
+        msgEl.innerHTML = '<div class="error-msg">⚠ Active invite already exists for this username</div>'; return;
+      }
+
+      const code = generateCode();
+      await db.collection('invites').add({
+        username, code, used: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      const link = `${window.location.origin}${window.location.pathname.replace('admin.html','register.html')}?invite=${code}`;
+
+      document.getElementById('invite-code-display').textContent = code;
+      document.getElementById('invite-meta').textContent = `Username: ${username}`;
+      document.getElementById('invite-link').textContent = link;
+      document.getElementById('invite-result').classList.add('visible');
+      document.getElementById('new-username').value = '';
+
+      msgEl.innerHTML = '<div class="success-msg">✓ Invite created successfully</div>';
+
+      setTimeout(() => loadData(), 1000);
+    } catch (err) {
+      msgEl.innerHTML = `<div class="error-msg">⚠ Error: ${err.message}</div>`;
+    }
+  };
+
+  function generateCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const part  = (n) => Array.from({length:n}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+    return `${part(4)}-${part(4)}`;
+  }
+
+  // ── COPY HELPERS ───────────────────────────────────────────
+  window.copyCode = function() {
+    const code = document.getElementById('invite-code-display').textContent;
+    navigator.clipboard.writeText(code).then(() => showCopyHint());
+  };
+
+  window.copyLink = function() {
+    const link = document.getElementById('invite-link').textContent;
+    navigator.clipboard.writeText(link).then(() => showCopyHint());
+  };
+
+  function showCopyHint() {
+    const hint = document.getElementById('copy-hint');
+    hint.style.display = 'block';
+    setTimeout(() => hint.style.display = 'none', 2000);
+    showToast('Copied to clipboard!');
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = '✓ ' + msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  }
+
+  // ── REVOKE INVITE ──────────────────────────────────────────
+  window.revokeInvite = async function(id) {
+    if (!confirm('Revoke this invite?')) return;
+    await db.collection('invites').doc(id).update({ used: true });
+    showToast('Invite revoked');
+    loadInvites();
+  };
+
+  // ── RESET USER ─────────────────────────────────────────────
+  window.resetUser = async function(uid, username) {
+    if (!confirm(`Reset progress for ${username}? This cannot be undone.`)) return;
+    await db.collection('users').doc(uid).update({
+      xp: 0, completedLessons: [], streak: 0
+    });
+    showToast(`Reset: ${username}`);
+    loadData();
+  };
+
+  window.logout = async () => { await auth.signOut(); window.location.href = 'index.html'; };
+</script>
+</body>
+</html>

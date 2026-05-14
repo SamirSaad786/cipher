@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CIPHER://HTML — Profile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/cipher.css">
+  <style>
+    .topnav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(3,2,10,0.95); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 2rem; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo { font-family: 'Orbitron', monospace; font-size: 1rem; font-weight: 900;
+      color: var(--cyan); text-decoration: none; letter-spacing: 0.2em;
+      text-shadow: 0 0 10px rgba(0,240,255,0.4); }
+    .nav-logo span { color: var(--magenta); }
+    .nav-right { display: flex; align-items: center; gap: 1.25rem; }
+    .btn-nav { background: transparent; border: 1px solid var(--border-color);
+      color: var(--text-muted); font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem; padding: 0.3rem 0.75rem; cursor: pointer;
+      transition: all 0.2s; letter-spacing: 0.1em; text-decoration: none; }
+    .btn-nav:hover { border-color: var(--cyan); color: var(--cyan); }
+
+    .profile-layout {
+      max-width: 1200px; margin: 0 auto; padding: 2rem;
+    }
+
+    /* ── PROFILE HEADER ── */
+    .profile-header {
+      background: var(--panel-bg); border: 1px solid var(--border-color);
+      border-top: 2px solid var(--cyan);
+      padding: 2rem;
+      display: flex; align-items: center; gap: 2rem;
+      margin-bottom: 1.5rem;
+      clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 0 100%);
+    }
+    .avatar-block {
+      width: 80px; height: 80px; border: 2px solid var(--cyan);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Orbitron', monospace; font-size: 1.8rem; font-weight: 900;
+      color: var(--cyan); background: rgba(0,240,255,0.05);
+      flex-shrink: 0;
+      text-shadow: 0 0 10px rgba(0,240,255,0.5);
+      box-shadow: 0 0 20px rgba(0,240,255,0.15);
+    }
+    .profile-info { flex: 1; }
+    .profile-username {
+      font-family: 'Orbitron', monospace; font-size: 1.8rem; font-weight: 900;
+      color: var(--text-primary); letter-spacing: 0.1em; margin-bottom: 0.25rem;
+    }
+    .profile-tier {
+      display: inline-block; padding: 0.2rem 0.75rem; margin-bottom: 0.75rem;
+      font-family: 'Share Tech Mono', monospace; font-size: 0.7rem;
+      letter-spacing: 0.2em; font-weight: 700; border: 1px solid;
+    }
+    .profile-joined {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+    .profile-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    .pstat {
+      background: rgba(0,0,0,0.3); border: 1px solid var(--border-color);
+      padding: 0.875rem; text-align: center;
+    }
+    .pstat-val {
+      font-family: 'Orbitron', monospace; font-size: 1.4rem; font-weight: 700;
+      color: var(--cyan); display: block;
+    }
+    .pstat-lbl {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.6rem;
+      color: var(--text-muted); letter-spacing: 0.15em; text-transform: uppercase;
+    }
+
+    /* ── LEVEL BAR ── */
+    .level-section {
+      background: var(--panel-bg); border: 1px solid var(--border-color);
+      padding: 1.25rem 1.5rem; margin-bottom: 1.5rem;
+      display: flex; align-items: center; gap: 1.5rem;
+    }
+    .level-name {
+      font-family: 'Orbitron', monospace; font-size: 0.85rem; font-weight: 700;
+      color: var(--gold); letter-spacing: 0.1em; white-space: nowrap;
+      text-shadow: 0 0 8px rgba(255,215,0,0.4);
+    }
+    .level-bar-outer { flex: 1; height: 10px; background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-color); overflow: hidden; }
+    .level-bar-inner { height: 100%;
+      background: linear-gradient(90deg, var(--gold), var(--cyan));
+      transition: width 1s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 0 0 8px rgba(255,215,0,0.4); }
+    .level-xp-text {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.72rem;
+      color: var(--text-muted); white-space: nowrap; min-width: 120px; text-align: right;
+    }
+
+    /* ── NFT GALLERY ── */
+    .gallery-section {
+      background: var(--panel-bg); border: 1px solid var(--border-color);
+      padding: 1.5rem; margin-bottom: 1.5rem;
+    }
+    .section-label {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.7rem;
+      color: var(--text-muted); letter-spacing: 0.3em; text-transform: uppercase;
+      margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px;
+      background: linear-gradient(90deg, var(--border-color), transparent); }
+
+    /* Tier sections in gallery */
+    .gallery-tier { margin-bottom: 2rem; }
+    .gallery-tier:last-child { margin-bottom: 0; }
+    .tier-gallery-header {
+      display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.875rem;
+    }
+    .tier-gallery-name {
+      font-family: 'Orbitron', monospace; font-size: 0.75rem; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase;
+    }
+    .tier-gallery-line { flex: 1; height: 1px; }
+    .tier-gallery-count {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.65rem;
+      color: var(--text-muted); letter-spacing: 0.1em;
+    }
+    .nft-gallery-grid {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem;
+    }
+    .nft-card {
+      aspect-ratio: 1; border: 1px solid var(--border-color);
+      position: relative; cursor: default; transition: all 0.25s;
+      overflow: hidden;
+    }
+    .nft-card.earned {
+      cursor: pointer;
+    }
+    .nft-card.earned:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      z-index: 2;
+    }
+    .nft-card.locked-card {
+      background: rgba(255,255,255,0.02);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 0.25rem;
+    }
+    .locked-icon { font-size: 1.4rem; color: rgba(255,255,255,0.08); }
+    .locked-num {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.6rem;
+      color: rgba(255,255,255,0.1); letter-spacing: 0.05em;
+    }
+    .nft-card svg { width: 100%; height: 100%; display: block; }
+    .nft-overlay-info {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(transparent, rgba(3,2,10,0.9));
+      padding: 1rem 0.5rem 0.5rem;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .nft-card.earned:hover .nft-overlay-info { opacity: 1; }
+    .nft-overlay-name {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.6rem;
+      color: var(--text-primary); letter-spacing: 0.05em; text-align: center;
+    }
+
+    /* ── ACHIEVEMENTS ── */
+    .achievements-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.875rem; }
+    .achievement {
+      background: rgba(0,0,0,0.3); border: 1px solid var(--border-color);
+      padding: 1rem; text-align: center; transition: all 0.2s;
+    }
+    .achievement.earned { border-color: var(--gold); background: rgba(255,215,0,0.04); }
+    .achievement.earned:hover { box-shadow: 0 0 12px rgba(255,215,0,0.15); }
+    .ach-icon { font-size: 1.5rem; margin-bottom: 0.5rem; filter: grayscale(1); opacity: 0.3; }
+    .achievement.earned .ach-icon { filter: none; opacity: 1; }
+    .ach-name { font-family: 'Share Tech Mono', monospace; font-size: 0.7rem;
+      color: var(--text-muted); letter-spacing: 0.1em; margin-bottom: 0.25rem; }
+    .achievement.earned .ach-name { color: var(--gold); }
+    .ach-desc { font-family: 'Rajdhani', sans-serif; font-size: 0.8rem;
+      color: rgba(255,255,255,0.2); line-height: 1.3; }
+    .achievement.earned .ach-desc { color: var(--text-muted); }
+
+    /* ── LOADING ── */
+    .dash-loading { position:fixed;inset:0;z-index:999;background:var(--bg-deep);
+      display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem; }
+    .spin { width:32px;height:32px;border:2px solid rgba(0,240,255,0.2);
+      border-top-color:var(--cyan);border-radius:50%;animation:spin 0.7s linear infinite; }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .load-txt { font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:var(--text-muted);letter-spacing:0.2em; }
+
+    @media(max-width:768px){
+      .profile-header { flex-direction:column; align-items:flex-start; }
+      .profile-stats { grid-template-columns: repeat(2,1fr); }
+      .achievements-grid { grid-template-columns: repeat(2,1fr); }
+      .nft-gallery-grid { grid-template-columns: repeat(3,1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="dash-loading" id="loading-screen">
+  <div class="spin"></div>
+  <div class="load-txt">LOADING PROFILE...</div>
+</div>
+
+<nav class="topnav" id="topnav" style="display:none">
+  <a class="nav-logo" href="dashboard.html">CIPHER<span>://</span>HTML</a>
+  <div class="nav-right">
+    <a class="btn-nav" href="dashboard.html">← DASHBOARD</a>
+    <button class="btn-nav" onclick="logout()">DISCONNECT</button>
+  </div>
+</nav>
+
+<main class="profile-layout" id="profile-main" style="display:none">
+
+  <!-- PROFILE HEADER -->
+  <div class="profile-header">
+    <div class="avatar-block" id="avatar-block">?</div>
+    <div class="profile-info">
+      <div class="profile-username" id="profile-username">—</div>
+      <div class="profile-tier" id="profile-tier">—</div>
+      <div class="profile-joined" id="profile-joined">—</div>
+    </div>
+    <div class="profile-stats">
+      <div class="pstat"><span class="pstat-val" id="ps-xp">0</span><span class="pstat-lbl">Total XP</span></div>
+      <div class="pstat"><span class="pstat-val" id="ps-done">0</span><span class="pstat-lbl">Lessons</span></div>
+      <div class="pstat"><span class="pstat-val" id="ps-streak">0</span><span class="pstat-lbl">Streak</span></div>
+      <div class="pstat"><span class="pstat-val" id="ps-nfts">0</span><span class="pstat-lbl">NFTs</span></div>
+    </div>
+  </div>
+
+  <!-- LEVEL BAR -->
+  <div class="level-section">
+    <div class="level-name" id="level-name">GHOST INIT</div>
+    <div class="level-bar-outer">
+      <div class="level-bar-inner" id="level-bar-fill" style="width:0%"></div>
+    </div>
+    <div class="level-xp-text" id="level-xp-text">0 / 200 XP to next level</div>
+  </div>
+
+  <!-- NFT GALLERY -->
+  <div class="gallery-section">
+    <div class="section-label">NFT COLLECTION</div>
+    <div id="gallery-content"><!-- Built by JS --></div>
+  </div>
+
+  <!-- ACHIEVEMENTS -->
+  <div class="gallery-section">
+    <div class="section-label">ACHIEVEMENTS</div>
+    <div class="achievements-grid" id="achievements-grid"><!-- Built by JS --></div>
+  </div>
+
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script type="module">
+  import { FIREBASE_CONFIG } from './js/firebase-config.js';
+  import { CURRICULUM, ALL_LESSONS, getLevelFromXP, getXPProgress } from './js/curriculum.js';
+  import { generateNFTArt } from './js/nft-art.js';
+
+  firebase.initializeApp(FIREBASE_CONFIG);
+  const auth = firebase.auth();
+  const db   = firebase.firestore();
+
+  const TIER_COLORS = { ghost:'#8880b8', runner:'#00f0ff', hacker:'#7b00ff', netrunner:'#ff003c' };
+
+  auth.onAuthStateChanged(async user => {
+    if (!user) { window.location.href = 'index.html'; return; }
+    const doc = await db.collection('users').doc(user.uid).get();
+    if (!doc.exists) { window.location.href = 'index.html'; return; }
+
+    const userData = doc.data();
+    renderProfile(userData);
+
+    document.getElementById('loading-screen').style.display = 'none';
+    document.getElementById('topnav').style.display = '';
+    document.getElementById('profile-main').style.display = '';
+  });
+
+  function renderProfile(d) {
+    const completed = d.completedLessons || [];
+    const xp        = d.xp || 0;
+    const username  = d.username || '—';
+    const levelInfo = getLevelFromXP(xp);
+    const xpProg    = getXPProgress(xp);
+
+    // Avatar
+    document.getElementById('avatar-block').textContent = username[0]?.toUpperCase() || '?';
+
+    // Header
+    document.getElementById('profile-username').textContent = username.toUpperCase();
+
+    const currentTierObj = getCurrentTier(completed);
+    const tierEl = document.getElementById('profile-tier');
+    tierEl.textContent  = currentTierObj.name.toUpperCase();
+    tierEl.style.color  = currentTierObj.color;
+    tierEl.style.borderColor = currentTierObj.color;
+
+    const joined = d.createdAt ? 'OPERATIVE SINCE ' + new Date(d.createdAt.toDate()).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' }) : 'OPERATIVE';
+    document.getElementById('profile-joined').textContent = joined;
+
+    // Stats
+    document.getElementById('ps-xp').textContent    = xp;
+    document.getElementById('ps-done').textContent  = completed.length + '/20';
+    document.getElementById('ps-streak').textContent = d.streak || 0;
+    document.getElementById('ps-nfts').textContent  = completed.length;
+
+    // Level bar
+    document.getElementById('level-name').textContent     = levelInfo.name;
+    document.getElementById('level-bar-fill').style.width = xpProg.pct + '%';
+    document.getElementById('level-xp-text').textContent  = `${xpProg.current} / ${xpProg.next} XP TO NEXT LEVEL`;
+
+    // Gallery
+    renderGallery(completed);
+
+    // Achievements
+    renderAchievements(completed, xp, d);
+  }
+
+  function getCurrentTier(completed) {
+    const tiers = CURRICULUM.tiers;
+    for (let i = tiers.length - 1; i >= 0; i--) {
+      const t = tiers[i];
+      if (t.lessons.some(l => completed.includes(l.id))) {
+        return { name: t.name, color: TIER_COLORS[t.id] };
+      }
+    }
+    return { name: 'GHOST', color: '#8880b8' };
+  }
+
+  function renderGallery(completed) {
+    const container = document.getElementById('gallery-content');
+    let html = '';
+
+    CURRICULUM.tiers.forEach(tier => {
+      const color       = TIER_COLORS[tier.id] || '#8880b8';
+      const tierDone    = tier.lessons.filter(l => completed.includes(l.id)).length;
+      html += `
+        <div class="gallery-tier">
+          <div class="tier-gallery-header">
+            <span class="tier-gallery-name" style="color:${color}">${tier.name}</span>
+            <div class="tier-gallery-line" style="background:linear-gradient(90deg,${color}30,transparent)"></div>
+            <span class="tier-gallery-count" style="color:${color}">${tierDone}/${tier.lessons.length}</span>
+          </div>
+          <div class="nft-gallery-grid">
+      `;
+
+      tier.lessons.forEach(lesson => {
+        const earned = completed.includes(lesson.id);
+        if (earned) {
+          const svg = generateNFTArt(lesson.id, tier.id, false);
+          html += `
+            <div class="nft-card earned" style="border-color:${color}30" title="${lesson.nftName}">
+              ${svg}
+              <div class="nft-overlay-info">
+                <div class="nft-overlay-name">${lesson.nftName}</div>
+              </div>
+            </div>
+          `;
+        } else {
+          html += `
+            <div class="nft-card locked-card">
+              <div class="locked-icon">⬡</div>
+              <div class="locked-num">L${lesson.number}</div>
+            </div>
+          `;
+        }
+      });
+
+      html += '</div></div>';
+    });
+
+    container.innerHTML = html;
+  }
+
+  function renderAchievements(completed, xp, d) {
+    const ACHIEVEMENTS = [
+      { id:'first_blood',  icon:'⚡', name:'FIRST BLOOD',    desc:'Complete your first lesson',          check: () => completed.length >= 1 },
+      { id:'tier1',        icon:'◈', name:'GHOST CLEARED',  desc:'Complete all Ghost tier lessons',      check: () => CURRICULUM.tiers[0].lessons.every(l => completed.includes(l.id)) },
+      { id:'tier2',        icon:'◈', name:'RUNNER CLEARED', desc:'Complete all Runner tier lessons',     check: () => CURRICULUM.tiers[1].lessons.every(l => completed.includes(l.id)) },
+      { id:'tier3',        icon:'◈', name:'HACKER CLEARED', desc:'Complete all Hacker tier lessons',     check: () => CURRICULUM.tiers[2].lessons.every(l => completed.includes(l.id)) },
+      { id:'tier4',        icon:'◈', name:'NETRUNNER',      desc:'Complete all Netrunner tier lessons',  check: () => CURRICULUM.tiers[3].lessons.every(l => completed.includes(l.id)) },
+      { id:'halfway',      icon:'⬡', name:'HALFWAY THERE',  desc:'Complete 10 lessons',                 check: () => completed.length >= 10 },
+      { id:'legend',       icon:'★', name:'LEGEND',         desc:'Complete all 20 lessons',             check: () => completed.length >= 20 },
+      { id:'xp500',        icon:'◆', name:'500 XP EARNED',  desc:'Earn 500 total XP',                   check: () => xp >= 500 },
+      { id:'xp1000',       icon:'◆', name:'1000 XP EARNED', desc:'Earn 1,000 total XP',                 check: () => xp >= 1000 },
+      { id:'streak3',      icon:'🔥', name:'ON FIRE',        desc:'Maintain a 3-day streak',             check: () => (d.streak||0) >= 3 },
+      { id:'streak7',      icon:'🔥', name:'WEEK WARRIOR',   desc:'Maintain a 7-day streak',             check: () => (d.streak||0) >= 7 },
+      { id:'collector',    icon:'⬟', name:'COLLECTOR',      desc:'Earn 5 NFTs',                         check: () => completed.length >= 5 },
+    ];
+
+    const grid = document.getElementById('achievements-grid');
+    grid.innerHTML = ACHIEVEMENTS.map(a => {
+      const earned = a.check();
+      return `
+        <div class="achievement ${earned ? 'earned' : ''}">
+          <div class="ach-icon">${a.icon}</div>
+          <div class="ach-name">${a.name}</div>
+          <div class="ach-desc">${a.desc}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.logout = async () => { await auth.signOut(); window.location.href = 'index.html'; };
+</script>
+</body>
+</html>

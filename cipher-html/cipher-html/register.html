@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CIPHER://HTML — Register</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/cipher.css">
+  <style>
+    body { overflow: hidden; }
+    #particle-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+    .reg-stage {
+      position: relative; z-index: 10;
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 2rem;
+    }
+    .logo-small {
+      font-family: 'Orbitron', monospace; font-weight: 900;
+      font-size: 1.4rem; letter-spacing: 0.2em;
+      color: var(--cyan);
+      text-shadow: 0 0 10px var(--cyan), 0 0 30px rgba(0,240,255,0.4);
+      margin-bottom: 0.25rem; text-align: center;
+    }
+    .logo-slash { color: var(--magenta); }
+    .step-indicator {
+      display: flex; gap: 0.5rem; margin-bottom: 2rem;
+      justify-content: center;
+    }
+    .step-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--border-color); transition: all 0.3s;
+    }
+    .step-dot.active { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+    .step-dot.done   { background: var(--green); box-shadow: 0 0 6px var(--green); }
+
+    .reg-panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-top: 2px solid var(--violet);
+      padding: 2.5rem;
+      width: 100%; max-width: 440px;
+      clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
+      position: relative;
+    }
+    .panel-title {
+      font-family: 'Orbitron', monospace; font-size: 1rem; font-weight: 700;
+      color: var(--text-primary); letter-spacing: 0.15em; margin-bottom: 0.25rem;
+    }
+    .panel-desc {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.75rem;
+      color: var(--text-muted); margin-bottom: 1.75rem; line-height: 1.6;
+    }
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label {
+      display: block; font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem; color: var(--text-muted);
+      letter-spacing: 0.25em; text-transform: uppercase; margin-bottom: 0.5rem;
+    }
+    .form-input {
+      width: 100%; background: rgba(0,0,0,0.5);
+      border: 1px solid var(--border-color); color: var(--text-primary);
+      font-family: 'Share Tech Mono', monospace; font-size: 0.9rem;
+      padding: 0.75rem 0.875rem; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s; letter-spacing: 0.05em;
+    }
+    .form-input:focus {
+      border-color: var(--violet);
+      box-shadow: 0 0 0 1px var(--violet), 0 0 12px rgba(123,0,255,0.15);
+    }
+    .form-input.error { border-color: var(--magenta); }
+    .form-input.success { border-color: var(--green); }
+    .form-input::placeholder { color: rgba(255,255,255,0.2); }
+    .username-display {
+      font-family: 'Orbitron', monospace; font-size: 1.5rem; font-weight: 700;
+      color: var(--cyan); text-align: center; padding: 1rem;
+      background: rgba(0,240,255,0.05); border: 1px solid rgba(0,240,255,0.2);
+      margin-bottom: 1.5rem; letter-spacing: 0.2em;
+      text-shadow: 0 0 10px rgba(0,240,255,0.5);
+    }
+    .password-strength {
+      margin-top: 0.5rem; display: flex; gap: 4px;
+    }
+    .strength-bar {
+      height: 3px; flex: 1; background: var(--border-color);
+      transition: background 0.3s;
+    }
+    .strength-bar.active-1 { background: var(--magenta); }
+    .strength-bar.active-2 { background: #ff8800; }
+    .strength-bar.active-3 { background: #ffdd00; }
+    .strength-bar.active-4 { background: var(--green); }
+    .strength-label {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.65rem;
+      color: var(--text-muted); margin-top: 0.25rem; text-align: right;
+    }
+    .btn-register {
+      width: 100%; background: linear-gradient(135deg, var(--violet), var(--magenta));
+      border: none; color: #fff;
+      font-family: 'Orbitron', monospace; font-size: 0.85rem; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase; padding: 0.9rem;
+      cursor: pointer;
+      clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+      transition: all 0.2s; position: relative; overflow: hidden;
+    }
+    .btn-register:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 24px rgba(123,0,255,0.4);
+    }
+    .btn-register:disabled { opacity: 0.5; cursor: not-allowed; }
+    .error-msg {
+      display: none; background: rgba(255,0,60,0.1);
+      border: 1px solid var(--magenta); color: var(--magenta);
+      font-family: 'Share Tech Mono', monospace; font-size: 0.75rem;
+      padding: 0.6rem 0.875rem; margin-top: 1rem; letter-spacing: 0.05em;
+    }
+    .error-msg.visible { display: block; }
+    .step { display: none; }
+    .step.active { display: block; }
+    .success-screen {
+      text-align: center; padding: 1rem 0;
+    }
+    .success-icon {
+      font-size: 3rem; margin-bottom: 1rem;
+      animation: successPop 0.5s ease-out;
+    }
+    @keyframes successPop {
+      0% { transform: scale(0); } 70% { transform: scale(1.2); } 100% { transform: scale(1); }
+    }
+    .success-title {
+      font-family: 'Orbitron', monospace; font-size: 1.3rem;
+      font-weight: 700; color: var(--green);
+      text-shadow: 0 0 10px var(--green); margin-bottom: 0.5rem;
+    }
+    .success-msg {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.8rem;
+      color: var(--text-muted); line-height: 1.7; margin-bottom: 1.5rem;
+    }
+    .btn-go {
+      display: inline-block; padding: 0.75rem 2rem;
+      background: linear-gradient(135deg, var(--cyan), var(--violet));
+      color: var(--bg-deep); font-family: 'Orbitron', monospace;
+      font-weight: 700; font-size: 0.8rem; letter-spacing: 0.2em;
+      text-decoration: none; text-transform: uppercase;
+      clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+      transition: all 0.2s;
+    }
+    .btn-go:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,240,255,0.3); }
+    .back-link {
+      text-align: center; margin-top: 1.5rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.72rem; color: var(--text-muted);
+    }
+    .back-link a { color: var(--cyan); text-decoration: none; }
+  </style>
+</head>
+<body>
+<canvas id="particle-canvas"></canvas>
+
+<main class="reg-stage">
+  <div class="logo-small" style="margin-bottom:1.5rem;">
+    CIPHER<span class="logo-slash">://</span>HTML
+  </div>
+
+  <div class="step-indicator">
+    <div class="step-dot active" id="dot-1"></div>
+    <div class="step-dot" id="dot-2"></div>
+    <div class="step-dot" id="dot-3"></div>
+  </div>
+
+  <div class="reg-panel">
+
+    <!-- STEP 1: Enter Invite Code -->
+    <div class="step active" id="step-1">
+      <div class="panel-title">VERIFY INVITE</div>
+      <div class="panel-desc">Enter your invite code to claim your username and access CIPHER://HTML.</div>
+      <div class="form-group">
+        <label>Invite Code</label>
+        <input class="form-input" id="invite-code" type="text"
+          placeholder="XXXX-XXXX" autocapitalize="characters" spellcheck="false"
+          maxlength="20">
+      </div>
+      <button class="btn-register" onclick="verifyInvite()">VERIFY CODE</button>
+      <div class="error-msg" id="err-1"></div>
+    </div>
+
+    <!-- STEP 2: Set Password -->
+    <div class="step" id="step-2">
+      <div class="panel-title">SET YOUR PASSWORD</div>
+      <div class="panel-desc">Your username has been assigned. Create a strong password to secure your node.</div>
+      <div class="username-display" id="display-username">—</div>
+      <div class="form-group">
+        <label>New Password</label>
+        <input class="form-input" id="reg-password" type="password"
+          placeholder="min. 8 characters" autocomplete="new-password"
+          oninput="checkStrength(this.value)">
+        <div class="password-strength">
+          <div class="strength-bar" id="sb-1"></div>
+          <div class="strength-bar" id="sb-2"></div>
+          <div class="strength-bar" id="sb-3"></div>
+          <div class="strength-bar" id="sb-4"></div>
+        </div>
+        <div class="strength-label" id="strength-label">—</div>
+      </div>
+      <div class="form-group">
+        <label>Confirm Password</label>
+        <input class="form-input" id="reg-password2" type="password"
+          placeholder="repeat password" autocomplete="new-password">
+      </div>
+      <button class="btn-register" onclick="createAccount()">CREATE ACCOUNT</button>
+      <div class="error-msg" id="err-2"></div>
+    </div>
+
+    <!-- STEP 3: Success -->
+    <div class="step" id="step-3">
+      <div class="success-screen">
+        <div class="success-icon">◈</div>
+        <div class="success-title">ACCOUNT INITIALIZED</div>
+        <div class="success-msg" id="success-msg">
+          Welcome to CIPHER://HTML.<br>Your node is live.
+        </div>
+        <a class="btn-go" href="dashboard.html">JACK IN →</a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="back-link">
+    <a href="index.html">← Back to login</a>
+  </div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script type="module">
+  import { FIREBASE_CONFIG } from './js/firebase-config.js';
+
+  firebase.initializeApp(FIREBASE_CONFIG);
+  const auth = firebase.auth();
+  const db   = firebase.firestore();
+
+  let claimedUsername = '';
+  let inviteDocId     = '';
+
+  // ── PARTICLE BACKGROUND ────────────────────────────────────
+  const canvas = document.getElementById('particle-canvas');
+  const ctx    = canvas.getContext('2d');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  });
+  const pts = Array.from({length:80}, () => ({
+    x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+    vx:(Math.random()-.5)*.4, vy:(Math.random()-.5)*.4,
+    color:['#7b00ff','#ff003c','#00f0ff'][Math.floor(Math.random()*3)]
+  }));
+  (function loop(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pts.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0)p.x=canvas.width; if(p.x>canvas.width)p.x=0;
+      if(p.y<0)p.y=canvas.height; if(p.y>canvas.height)p.y=0;
+      ctx.globalAlpha=0.3; ctx.fillStyle=p.color;
+      ctx.shadowBlur=4; ctx.shadowColor=p.color;
+      ctx.beginPath(); ctx.arc(p.x,p.y,1.5,0,Math.PI*2); ctx.fill();
+    });
+    requestAnimationFrame(loop);
+  })();
+
+  // ── REDIRECT IF LOGGED IN ──────────────────────────────────
+  auth.onAuthStateChanged(u => { if(u) window.location.href='dashboard.html'; });
+
+  // ── STEP NAV ───────────────────────────────────────────────
+  function goStep(n) {
+    document.querySelectorAll('.step').forEach((s,i) => {
+      s.classList.toggle('active', i===n-1);
+    });
+    document.querySelectorAll('.step-dot').forEach((d,i) => {
+      d.classList.toggle('active', i===n-1);
+      d.classList.toggle('done',   i<n-1);
+    });
+  }
+
+  // ── VERIFY INVITE ──────────────────────────────────────────
+  window.verifyInvite = async function() {
+    const code = document.getElementById('invite-code').value.trim().toUpperCase();
+    if (!code) { showErr(1,'ENTER YOUR INVITE CODE'); return; }
+
+    const btn = document.querySelector('#step-1 .btn-register');
+    btn.textContent = 'VERIFYING...'; btn.disabled = true;
+
+    try {
+      const snap = await db.collection('invites')
+        .where('code','==',code)
+        .where('used','==',false)
+        .limit(1).get();
+
+      if (snap.empty) {
+        showErr(1,'INVALID OR ALREADY USED INVITE CODE');
+        btn.textContent = 'VERIFY CODE'; btn.disabled = false;
+        return;
+      }
+
+      const doc = snap.docs[0];
+      claimedUsername = doc.data().username;
+      inviteDocId     = doc.id;
+
+      document.getElementById('display-username').textContent = claimedUsername;
+      document.getElementById('success-msg').innerHTML =
+        `Welcome, <strong>${claimedUsername}</strong>.<br>Your node is live. Start your run.`;
+
+      goStep(2);
+    } catch (err) {
+      showErr(1,'NETWORK ERROR — RETRY');
+      btn.textContent = 'VERIFY CODE'; btn.disabled = false;
+    }
+  };
+
+  // ── PASSWORD STRENGTH ──────────────────────────────────────
+  window.checkStrength = function(val) {
+    let score = 0;
+    if (val.length >= 8)   score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+
+    const labels = ['','WEAK','FAIR','STRONG','ELITE'];
+    document.getElementById('strength-label').textContent = score ? labels[score] : '—';
+
+    for (let i=1;i<=4;i++) {
+      const bar = document.getElementById(`sb-${i}`);
+      bar.className = 'strength-bar' + (i<=score ? ` active-${score}` : '');
+    }
+  };
+
+  // ── CREATE ACCOUNT ─────────────────────────────────────────
+  window.createAccount = async function() {
+    const pw1 = document.getElementById('reg-password').value;
+    const pw2 = document.getElementById('reg-password2').value;
+
+    if (pw1.length < 8)  { showErr(2,'PASSWORD MUST BE AT LEAST 8 CHARACTERS'); return; }
+    if (pw1 !== pw2)     { showErr(2,'PASSWORDS DO NOT MATCH'); return; }
+
+    const btn = document.querySelector('#step-2 .btn-register');
+    btn.textContent = 'INITIALIZING...'; btn.disabled = true;
+
+    const email = `${claimedUsername}@cipher.learn`;
+
+    try {
+      const cred = await auth.createUserWithEmailAndPassword(email, pw1);
+      const uid  = cred.user.uid;
+
+      // Write user profile
+      await db.collection('users').doc(uid).set({
+        username:         claimedUsername,
+        email:            email,
+        createdAt:        firebase.firestore.FieldValue.serverTimestamp(),
+        xp:               0,
+        completedLessons: [],
+        streak:           0,
+        lastActive:       firebase.firestore.FieldValue.serverTimestamp(),
+        isAdmin:          false,
+        timerBonusXp:     0,
+        totalTime:        0
+      });
+
+      // Mark invite used
+      await db.collection('invites').doc(inviteDocId).update({ used: true, usedBy: uid });
+
+      goStep(3);
+    } catch (err) {
+      let msg = 'ACCOUNT CREATION FAILED';
+      if (err.code === 'auth/email-already-in-use') msg = 'USERNAME ALREADY TAKEN';
+      if (err.code === 'auth/weak-password')        msg = 'PASSWORD TOO WEAK';
+      showErr(2, msg);
+      btn.textContent = 'CREATE ACCOUNT'; btn.disabled = false;
+    }
+  };
+
+  function showErr(step, msg) {
+    const el = document.getElementById(`err-${step}`);
+    el.textContent = '⚠ ' + msg;
+    el.classList.add('visible');
+    setTimeout(() => el.classList.remove('visible'), 5000);
+  }
+
+  // ── ENTER KEY ──────────────────────────────────────────────
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const s1 = document.getElementById('step-1').classList.contains('active');
+    const s2 = document.getElementById('step-2').classList.contains('active');
+    if (s1) verifyInvite();
+    if (s2) createAccount();
+  });
+</script>
+</body>
+</html>

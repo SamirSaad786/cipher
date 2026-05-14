@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CIPHER://HTML — Jack In</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/cipher.css">
+  <style>
+    body { overflow: hidden; }
+
+    /* ── PARTICLE CANVAS ── */
+    #particle-canvas {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── LOGIN STAGE ── */
+    .login-stage {
+      position: relative; z-index: 10;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 2rem;
+    }
+
+    /* ── LOGO BLOCK ── */
+    .logo-block { text-align: center; margin-bottom: 3rem; }
+
+    .logo-cipher {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(2.2rem, 6vw, 4rem);
+      font-weight: 900;
+      letter-spacing: 0.15em;
+      color: var(--cyan);
+      text-shadow:
+        0 0 10px var(--cyan),
+        0 0 30px rgba(0,240,255,0.5),
+        0 0 60px rgba(0,240,255,0.2);
+      animation: logoFlicker 6s ease-in-out infinite;
+      position: relative;
+    }
+
+    .logo-cipher::before {
+      content: attr(data-text);
+      position: absolute; top: 0; left: 0;
+      color: var(--magenta);
+      clip-path: polygon(0 30%, 100% 30%, 100% 50%, 0 50%);
+      transform: translate(-2px, 0);
+      opacity: 0;
+      animation: glitchClip 8s step-end infinite;
+    }
+
+    .logo-slash {
+      color: var(--magenta);
+      text-shadow: 0 0 10px var(--magenta), 0 0 30px rgba(255,0,60,0.5);
+    }
+
+    .logo-sub {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 0.4em;
+      margin-top: 0.5rem;
+      text-transform: uppercase;
+    }
+
+    .logo-tagline {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1rem;
+      color: var(--violet);
+      letter-spacing: 0.2em;
+      margin-top: 0.25rem;
+      text-transform: uppercase;
+    }
+
+    @keyframes logoFlicker {
+      0%,100% { opacity: 1; }
+      92% { opacity: 1; }
+      93% { opacity: 0.7; }
+      94% { opacity: 1; }
+      96% { opacity: 0.8; }
+      97% { opacity: 1; }
+    }
+
+    @keyframes glitchClip {
+      0%,90%,100% { opacity: 0; }
+      91% { opacity: 0.8; transform: translate(-3px, 0); }
+      92% { opacity: 0; }
+      93% { opacity: 0.6; transform: translate(3px, 0); }
+      94% { opacity: 0; }
+    }
+
+    /* ── LOGIN PANEL ── */
+    .login-panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-top: 2px solid var(--cyan);
+      padding: 2.5rem 2.5rem 2rem;
+      width: 100%; max-width: 420px;
+      position: relative;
+      clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
+    }
+
+    .login-panel::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(0,240,255,0.03) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .panel-header {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--cyan);
+      letter-spacing: 0.3em;
+      margin-bottom: 1.75rem;
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+
+    .panel-header::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(90deg, var(--border-color), transparent);
+    }
+
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--green); flex-shrink: 0;
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%,100% { opacity: 1; } 50% { opacity: 0.4; }
+    }
+
+    /* ── FORM ── */
+    .form-group { margin-bottom: 1.25rem; }
+
+    .form-group label {
+      display: block;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-wrapper .input-icon {
+      position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%);
+      color: var(--text-muted); font-size: 0.9rem;
+      pointer-events: none; transition: color 0.2s;
+    }
+
+    .form-input {
+      width: 100%;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid var(--border-color);
+      color: var(--text-primary);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.9rem;
+      padding: 0.75rem 0.875rem 0.75rem 2.5rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      letter-spacing: 0.05em;
+    }
+
+    .form-input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 1px var(--cyan), 0 0 12px rgba(0,240,255,0.15);
+    }
+
+    .form-input:focus + .input-icon,
+    .input-wrapper:focus-within .input-icon {
+      color: var(--cyan);
+    }
+
+    .form-input::placeholder { color: rgba(255,255,255,0.2); }
+
+    /* ── REMEMBER + FORGOT ── */
+    .form-extras {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+
+    .remember-check {
+      display: flex; align-items: center; gap: 0.5rem;
+      cursor: pointer;
+    }
+
+    .remember-check input[type="checkbox"] {
+      width: 14px; height: 14px;
+      accent-color: var(--cyan);
+      cursor: pointer;
+    }
+
+    .remember-check span {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.1em;
+    }
+
+    /* ── LOGIN BUTTON ── */
+    .btn-jack-in {
+      width: 100%;
+      background: linear-gradient(135deg, var(--cyan), var(--violet));
+      border: none; color: var(--bg-deep);
+      font-family: 'Orbitron', monospace;
+      font-size: 0.85rem; font-weight: 700;
+      letter-spacing: 0.3em; text-transform: uppercase;
+      padding: 0.9rem;
+      cursor: pointer;
+      clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+      transition: all 0.2s;
+      position: relative; overflow: hidden;
+    }
+
+    .btn-jack-in::before {
+      content: '';
+      position: absolute; top: -50%; left: -60%;
+      width: 40%; height: 200%;
+      background: rgba(255,255,255,0.15);
+      transform: skewX(-20deg);
+      transition: left 0.4s;
+    }
+
+    .btn-jack-in:hover::before { left: 130%; }
+    .btn-jack-in:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 24px rgba(0,240,255,0.3), 0 0 40px rgba(123,0,255,0.2);
+    }
+
+    .btn-jack-in:active { transform: translateY(0); }
+    .btn-jack-in:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── ERROR MESSAGE ── */
+    .error-msg {
+      display: none;
+      background: rgba(255,0,60,0.1);
+      border: 1px solid var(--magenta);
+      color: var(--magenta);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem;
+      padding: 0.6rem 0.875rem;
+      margin-top: 1rem;
+      letter-spacing: 0.05em;
+    }
+
+    .error-msg.visible { display: block; animation: fadeIn 0.2s; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; } }
+
+    /* ── FOOTER LINKS ── */
+    .login-footer {
+      text-align: center; margin-top: 1.5rem;
+    }
+
+    .login-footer p {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.72rem; color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    .login-footer a {
+      color: var(--cyan); text-decoration: none;
+      transition: text-shadow 0.2s;
+    }
+
+    .login-footer a:hover {
+      text-shadow: 0 0 8px var(--cyan);
+    }
+
+    /* ── SCAN LINES OVERLAY (login-specific intensity) ── */
+    .login-scanlines {
+      position: fixed; inset: 0; z-index: 1;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 2px,
+        rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px
+      );
+      pointer-events: none;
+    }
+
+    /* ── LOADING STATE ── */
+    .btn-jack-in .btn-text { transition: opacity 0.2s; }
+    .btn-jack-in.loading .btn-text { opacity: 0; }
+    .btn-jack-in.loading::after {
+      content: '';
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 16px; height: 16px;
+      border: 2px solid transparent;
+      border-top-color: var(--bg-deep);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+    /* ── CORNER DECORATIONS ── */
+    .corner-tl, .corner-br {
+      position: absolute;
+      width: 20px; height: 20px;
+      pointer-events: none;
+    }
+    .corner-tl {
+      top: -1px; left: -1px;
+      border-top: 2px solid var(--violet);
+      border-left: 2px solid var(--violet);
+    }
+    .corner-br {
+      bottom: -1px; right: -1px;
+      border-bottom: 2px solid var(--violet);
+      border-right: 2px solid var(--violet);
+    }
+
+    /* ── SYSTEM STATS STRIP ── */
+    .sys-stats {
+      display: flex; gap: 2rem;
+      margin-top: 2rem;
+      justify-content: center;
+    }
+    .sys-stat {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      color: rgba(255,255,255,0.2);
+      letter-spacing: 0.15em;
+    }
+    .sys-stat span { color: var(--violet); }
+  </style>
+</head>
+<body>
+  <!-- Particle background -->
+  <canvas id="particle-canvas"></canvas>
+  <div class="login-scanlines"></div>
+
+  <main class="login-stage">
+
+    <!-- LOGO -->
+    <div class="logo-block">
+      <div class="logo-cipher" data-text="CIPHER://HTML">
+        CIPHER<span class="logo-slash">://</span>HTML
+      </div>
+      <div class="logo-sub">v1.0 · Secure Node Active</div>
+      <div class="logo-tagline">Jack into the code. Level up your protocol.</div>
+    </div>
+
+    <!-- LOGIN PANEL -->
+    <div class="login-panel">
+      <div class="corner-tl"></div>
+      <div class="corner-br"></div>
+
+      <div class="panel-header">
+        <div class="status-dot"></div>
+        AUTHENTICATION REQUIRED
+      </div>
+
+      <div class="form-group">
+        <label for="username">Username</label>
+        <div class="input-wrapper">
+          <input
+            class="form-input" id="username" type="text"
+            placeholder="your_handle" autocomplete="username"
+            autocapitalize="none" spellcheck="false"
+          >
+          <span class="input-icon">⬡</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="input-wrapper">
+          <input
+            class="form-input" id="password" type="password"
+            placeholder="••••••••••" autocomplete="current-password"
+          >
+          <span class="input-icon">⬡</span>
+        </div>
+      </div>
+
+      <div class="form-extras">
+        <label class="remember-check">
+          <input type="checkbox" id="remember">
+          <span>Stay jacked in</span>
+        </label>
+      </div>
+
+      <button class="btn-jack-in" id="btn-login" onclick="handleLogin()">
+        <span class="btn-text">JACK IN</span>
+      </button>
+
+      <div class="error-msg" id="error-msg"></div>
+
+      <div class="login-footer">
+        <p>No account? You need an invite.<br>
+        Contact <a href="mailto:cipher@cipher.learn">your operator</a> to get access.</p>
+      </div>
+    </div>
+
+    <!-- SYSTEM STATS -->
+    <div class="sys-stats">
+      <div class="sys-stat">NODES <span id="stat-lessons">20</span></div>
+      <div class="sys-stat">TIERS <span>04</span></div>
+      <div class="sys-stat">NFTS <span>20</span></div>
+      <div class="sys-stat">VER <span>1.0.0</span></div>
+    </div>
+
+  </main>
+
+  <!-- Firebase SDK (compat for simplicity with GitHub Pages) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+  <script type="module">
+    import { FIREBASE_CONFIG, ADMIN_USERNAME } from './js/firebase-config.js';
+
+    // ── INIT FIREBASE ──────────────────────────────────────────
+    firebase.initializeApp(FIREBASE_CONFIG);
+    const auth = firebase.auth();
+    const db   = firebase.firestore();
+
+    // ── PARTICLE SYSTEM ────────────────────────────────────────
+    const canvas = document.getElementById('particle-canvas');
+    const ctx    = canvas.getContext('2d');
+    let particles = [];
+
+    function resize() {
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    resize();
+    window.addEventListener('resize', resize);
+
+    class Particle {
+      constructor() { this.reset(true); }
+      reset(init = false) {
+        this.x    = Math.random() * canvas.width;
+        this.y    = init ? Math.random() * canvas.height : canvas.height + 10;
+        this.vy   = -(0.3 + Math.random() * 0.8);
+        this.vx   = (Math.random() - 0.5) * 0.3;
+        this.size = 0.5 + Math.random() * 1.5;
+        this.life = 0;
+        this.maxLife = 150 + Math.random() * 200;
+        const palette = ['#00f0ff','#7b00ff','#ff003c','#00ff9f','#ffd700'];
+        this.color = palette[Math.floor(Math.random() * palette.length)];
+      }
+      update() {
+        this.x += this.vx; this.y += this.vy; this.life++;
+        if (this.y < -10 || this.life > this.maxLife) this.reset();
+      }
+      draw() {
+        const alpha = Math.min(this.life / 30, 1) * Math.max((this.maxLife - this.life) / this.maxLife, 0);
+        ctx.save();
+        ctx.globalAlpha = alpha * 0.6;
+        ctx.fillStyle   = this.color;
+        ctx.shadowBlur  = 6;
+        ctx.shadowColor = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    // Generate particles
+    for (let i = 0; i < 120; i++) particles.push(new Particle());
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => { p.update(); p.draw(); });
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+    // ── AUTH STATE ─────────────────────────────────────────────
+    auth.onAuthStateChanged(async user => {
+      if (!user) return;
+      // Already signed in — redirect
+      const doc = await db.collection('users').doc(user.uid).get();
+      const isAdmin = doc.exists && doc.data().isAdmin;
+      window.location.href = isAdmin ? 'admin.html' : 'dashboard.html';
+    });
+
+    // ── LOGIN HANDLER ──────────────────────────────────────────
+    window.handleLogin = async function() {
+      const usernameRaw = document.getElementById('username').value.trim().toLowerCase();
+      const password    = document.getElementById('password').value;
+      const btn         = document.getElementById('btn-login');
+      const errEl       = document.getElementById('error-msg');
+
+      errEl.classList.remove('visible');
+
+      if (!usernameRaw || !password) {
+        showError('USERNAME AND PASSWORD REQUIRED');
+        return;
+      }
+
+      btn.classList.add('loading');
+      btn.disabled = true;
+
+      const email = `${usernameRaw}@cipher.learn`;
+
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+        // onAuthStateChanged handles redirect
+      } catch (err) {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+        let msg = 'AUTHENTICATION FAILED';
+        if (err.code === 'auth/user-not-found')   msg = 'UNKNOWN HANDLE — REQUEST AN INVITE';
+        if (err.code === 'auth/wrong-password')   msg = 'INVALID CREDENTIALS — ACCESS DENIED';
+        if (err.code === 'auth/too-many-requests') msg = 'TOO MANY ATTEMPTS — STAND DOWN';
+        showError(msg);
+      }
+    };
+
+    function showError(msg) {
+      const el = document.getElementById('error-msg');
+      el.textContent = '⚠ ' + msg;
+      el.classList.add('visible');
+    }
+
+    // ── ENTER KEY SUPPORT ──────────────────────────────────────
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleLogin();
+    });
+
+    // ── REMEMBER USERNAME ──────────────────────────────────────
+    const saved = localStorage.getItem('cipher_username');
+    if (saved) {
+      document.getElementById('username').value = saved;
+      document.getElementById('remember').checked = true;
+    }
+
+    document.getElementById('btn-login').addEventListener('click', () => {
+      const rem = document.getElementById('remember').checked;
+      const usr = document.getElementById('username').value.trim().toLowerCase();
+      if (rem && usr) localStorage.setItem('cipher_username', usr);
+      else localStorage.removeItem('cipher_username');
+    });
+  </script>
+</body>
+</html>
