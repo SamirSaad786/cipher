@@ -7,63 +7,67 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/cipher.css">
-  <!-- Ace Editor -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.3/ace.js"></script>
   <style>
+    /* ─────────────────────────────────────────────────────────
+       LESSON.HTML — teal #00c8b4 accent, hardcoded critical
+       values. All Firebase/Firestore/auth logic untouched.
+       BUG FIXES: test.message, js-api method, css-rule value,
+       css-class selector, onChange debounce.
+    ───────────────────────────────────────────────────────── */
+
     /* ── NAV ── */
     .lesson-nav {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(3,2,10,0.95); backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border-color);
+      background: #07061a;
+      border-bottom: 1px solid rgba(0,200,180,0.18);
       padding: 0 1.5rem; height: 56px;
       display: flex; align-items: center; gap: 1rem;
     }
     .nav-back {
-      color: var(--text-muted); text-decoration: none;
+      color: rgba(255,255,255,0.45); text-decoration: none;
       font-family: 'Share Tech Mono', monospace; font-size: 0.75rem;
       letter-spacing: 0.1em; transition: color 0.2s;
     }
-    .nav-back:hover { color: var(--cyan); }
-    .nav-divider {
-      width: 1px; height: 20px; background: var(--border-color);
-    }
+    .nav-back:hover { color: #00c8b4; }
+    .nav-divider { width: 1px; height: 20px; background: rgba(255,255,255,0.1); }
     .nav-lesson-info { flex: 1; }
     .nav-lesson-num {
       font-family: 'Share Tech Mono', monospace; font-size: 0.65rem;
-      color: var(--text-muted); letter-spacing: 0.2em;
+      color: rgba(255,255,255,0.45); letter-spacing: 0.2em;
     }
     .nav-lesson-title {
       font-family: 'Orbitron', monospace; font-size: 0.85rem; font-weight: 700;
-      color: var(--text-primary); letter-spacing: 0.1em;
+      color: #e8e5ff; letter-spacing: 0.1em;
     }
     .nav-right { display: flex; align-items: center; gap: 1rem; }
 
-    /* ── TIMER DISPLAY ── */
+    /* ── TIMER ── */
     .timer-display {
       display: flex; align-items: center; gap: 0.5rem;
       font-family: 'Orbitron', monospace; font-size: 1.1rem; font-weight: 700;
-      letter-spacing: 0.1em; color: var(--cyan);
+      letter-spacing: 0.1em; color: #00c8b4;
       min-width: 80px; justify-content: center;
     }
     .timer-display.warning { color: #ff8800; }
-    .timer-display.danger  { color: var(--magenta); animation: blink 0.5s step-end infinite; }
+    .timer-display.danger  { color: #ff003c; animation: blink 0.5s step-end infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
     .btn-timer-toggle {
-      background: rgba(0,240,255,0.08); border: 1px solid rgba(0,240,255,0.2);
-      color: var(--cyan); font-family: 'Share Tech Mono', monospace;
+      background: rgba(0,200,180,0.08); border: 1px solid rgba(0,200,180,0.25);
+      color: #00c8b4; font-family: 'Share Tech Mono', monospace;
       font-size: 0.7rem; padding: 0.3rem 0.75rem; cursor: pointer;
       transition: all 0.2s; letter-spacing: 0.1em;
     }
     .btn-timer-toggle:hover, .btn-timer-toggle.active {
-      background: rgba(0,240,255,0.15); border-color: var(--cyan);
-      box-shadow: 0 0 8px rgba(0,240,255,0.2);
+      background: rgba(0,200,180,0.18); border-color: #00c8b4;
+      box-shadow: 0 0 8px rgba(0,200,180,0.25);
     }
     .xp-badge {
-      font-family: 'Orbitron', monospace; font-size: 0.7rem;
-      font-weight: 700; padding: 0.25rem 0.6rem;
-      background: rgba(0,240,255,0.1); border: 1px solid rgba(0,240,255,0.2);
-      color: var(--cyan); letter-spacing: 0.1em;
+      font-family: 'Orbitron', monospace; font-size: 0.7rem; font-weight: 700;
+      padding: 0.25rem 0.6rem;
+      background: rgba(0,200,180,0.1); border: 1px solid rgba(0,200,180,0.25);
+      color: #00c8b4; letter-spacing: 0.1em;
     }
 
     /* ── MAIN LAYOUT ── */
@@ -76,167 +80,198 @@
 
     /* ── THEORY PANE ── */
     .theory-pane {
-      border-right: 1px solid var(--border-color);
-      display: flex; flex-direction: column;
-      overflow: hidden;
+      background: #0a0918;
+      border-right: 1px solid rgba(255,255,255,0.07);
+      display: flex; flex-direction: column; overflow: hidden;
     }
     .theory-header {
-      padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color);
-      flex-shrink: 0;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid rgba(255,255,255,0.07); flex-shrink: 0;
     }
     .pane-label {
       font-family: 'Share Tech Mono', monospace; font-size: 0.65rem;
-      color: var(--text-muted); letter-spacing: 0.3em; text-transform: uppercase;
+      color: rgba(255,255,255,0.4); letter-spacing: 0.3em; text-transform: uppercase;
       margin-bottom: 0.5rem;
     }
     .lesson-full-title {
       font-family: 'Orbitron', monospace; font-size: 1rem; font-weight: 700;
-      color: var(--text-primary); letter-spacing: 0.05em; line-height: 1.2;
+      color: #e8e5ff; letter-spacing: 0.05em; line-height: 1.2;
     }
     .lesson-full-sub {
       font-family: 'Rajdhani', sans-serif; font-size: 0.9rem;
-      color: var(--text-muted); margin-top: 0.15rem;
+      color: rgba(255,255,255,0.45); margin-top: 0.15rem;
     }
-    .theory-body {
-      flex: 1; overflow-y: auto; padding: 1.25rem;
-    }
+    .theory-body { flex: 1; overflow-y: auto; padding: 1.25rem; }
     .theory-body::-webkit-scrollbar { width: 4px; }
     .theory-body::-webkit-scrollbar-track { background: transparent; }
-    .theory-body::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
+    .theory-body::-webkit-scrollbar-thumb { background: rgba(0,200,180,0.2); border-radius: 2px; }
     .theory-body h3 {
       font-family: 'Orbitron', monospace; font-size: 0.85rem; font-weight: 700;
-      color: var(--cyan); letter-spacing: 0.1em; margin: 1.25rem 0 0.5rem;
+      color: #00c8b4; letter-spacing: 0.1em; margin: 1.25rem 0 0.5rem;
       text-transform: uppercase;
     }
     .theory-body h3:first-child { margin-top: 0; }
     .theory-body p {
       font-family: 'Rajdhani', sans-serif; font-size: 0.95rem;
-      color: var(--text-secondary); line-height: 1.65; margin-bottom: 0.75rem;
+      color: rgba(232,229,255,0.8); line-height: 1.65; margin-bottom: 0.75rem;
     }
-    .theory-body strong { color: var(--cyan); font-weight: 700; }
-    .theory-body em { color: var(--violet); font-style: normal; font-weight: 600; }
+    .theory-body strong { color: #00c8b4; font-weight: 700; }
+    .theory-body em { color: #b48aff; font-style: normal; font-weight: 600; }
     .theory-body code {
       font-family: 'Share Tech Mono', monospace; font-size: 0.82rem;
-      background: rgba(0,240,255,0.06); border: 1px solid rgba(0,240,255,0.15);
-      padding: 0.1em 0.4em; color: var(--cyan);
+      background: rgba(0,200,180,0.08); border: 1px solid rgba(0,200,180,0.2);
+      padding: 0.1em 0.4em; color: #00c8b4;
     }
     .theory-body pre {
-      background: rgba(0,0,0,0.5); border: 1px solid var(--border-color);
-      border-left: 2px solid var(--violet); padding: 0.875rem;
+      background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08);
+      border-left: 2px solid #00c8b4; padding: 0.875rem;
       margin: 0.75rem 0; overflow-x: auto;
     }
     .theory-body pre code {
       background: none; border: none; padding: 0;
-      font-size: 0.82rem; color: var(--text-secondary);
+      font-size: 0.82rem; color: rgba(232,229,255,0.7);
     }
-    .theory-body ul, .theory-body ol {
-      padding-left: 1.25rem; margin-bottom: 0.75rem;
-    }
+    .theory-body ul, .theory-body ol { padding-left: 1.25rem; margin-bottom: 0.75rem; }
     .theory-body li {
       font-family: 'Rajdhani', sans-serif; font-size: 0.95rem;
-      color: var(--text-secondary); line-height: 1.6; margin-bottom: 0.25rem;
+      color: rgba(232,229,255,0.7); line-height: 1.6; margin-bottom: 0.25rem;
     }
     .theory-footer {
-      padding: 1rem 1.25rem; border-top: 1px solid var(--border-color);
-      flex-shrink: 0;
+      padding: 1rem 1.25rem;
+      border-top: 1px solid rgba(255,255,255,0.07); flex-shrink: 0;
+    }
+    .challenge-box {
+      background: rgba(0,200,180,0.06); border: 1px solid rgba(0,200,180,0.2);
+      border-left: 3px solid #00c8b4; padding: 0.875rem 1rem; margin-top: 1rem;
+    }
+    .challenge-title {
+      font-family: 'Orbitron', monospace; font-size: 0.72rem; font-weight: 700;
+      color: #00c8b4; letter-spacing: 0.15em; margin-bottom: 0.5rem;
     }
 
-    /* ── HINT SYSTEM ── */
-    .hints-section { margin-top: 1.25rem; }
+    /* ── HINTS ── */
+    .hints-section { margin-top: 0.5rem; }
     .hints-toggle {
-      width: 100%; background: rgba(123,0,255,0.08);
-      border: 1px solid rgba(123,0,255,0.2); color: var(--violet);
+      width: 100%; background: rgba(0,200,180,0.06);
+      border: 1px solid rgba(0,200,180,0.2); color: #00c8b4;
       font-family: 'Share Tech Mono', monospace; font-size: 0.7rem;
       padding: 0.5rem; cursor: pointer; text-align: left;
       letter-spacing: 0.1em; transition: all 0.2s;
     }
-    .hints-toggle:hover { background: rgba(123,0,255,0.15); }
+    .hints-toggle:hover { background: rgba(0,200,180,0.12); }
     .hints-list { display: none; padding-top: 0.5rem; }
     .hints-list.open { display: block; }
     .hint-item {
       font-family: 'Share Tech Mono', monospace; font-size: 0.73rem;
-      color: var(--text-muted); padding: 0.5rem 0;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-      line-height: 1.5;
+      color: rgba(255,255,255,0.55); padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05); line-height: 1.5;
     }
     .hint-item:last-child { border-bottom: none; }
-    .hint-item::before { content: '→ '; color: var(--violet); }
+    .hint-item::before { content: '→ '; color: #00c8b4; }
 
     /* ── EDITOR PANE ── */
     .editor-pane {
-      border-right: 1px solid var(--border-color);
+      background: #060514;
+      border-right: 1px solid rgba(255,255,255,0.07);
       display: flex; flex-direction: column; overflow: hidden;
     }
     .editor-header {
-      padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color);
+      padding: 0.75rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.07);
       flex-shrink: 0; display: flex; align-items: center; gap: 0.75rem;
+      background: #07061a;
     }
     .editor-actions { margin-left: auto; display: flex; gap: 0.5rem; }
     .btn-reset {
-      background: transparent; border: 1px solid var(--border-color);
-      color: var(--text-muted); font-family: 'Share Tech Mono', monospace;
+      background: transparent; border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.4); font-family: 'Share Tech Mono', monospace;
       font-size: 0.65rem; padding: 0.3rem 0.6rem; cursor: pointer;
       transition: all 0.2s; letter-spacing: 0.1em;
     }
-    .btn-reset:hover { border-color: var(--magenta); color: var(--magenta); }
+    .btn-reset:hover { border-color: #ff003c; color: #ff003c; }
     .btn-run {
-      background: rgba(0,255,159,0.1); border: 1px solid rgba(0,255,159,0.2);
-      color: var(--green); font-family: 'Orbitron', monospace;
+      background: rgba(0,200,180,0.12); border: 1px solid rgba(0,200,180,0.35);
+      color: #00c8b4; font-family: 'Orbitron', monospace;
       font-size: 0.7rem; font-weight: 700; padding: 0.35rem 0.875rem;
       cursor: pointer; letter-spacing: 0.1em; transition: all 0.2s;
     }
     .btn-run:hover {
-      background: rgba(0,255,159,0.2);
-      box-shadow: 0 0 10px rgba(0,255,159,0.2);
+      background: rgba(0,200,180,0.22);
+      box-shadow: 0 0 10px rgba(0,200,180,0.25);
     }
     #ace-editor { flex: 1; }
 
-    /* ── PREVIEW + TESTS PANE ── */
-    .output-pane {
-      display: flex; flex-direction: column; overflow: hidden;
-    }
+    /* ── OUTPUT PANE ── */
+    .output-pane { background: #0a0918; display: flex; flex-direction: column; overflow: hidden; }
     .output-tabs {
       display: flex; flex-shrink: 0;
-      border-bottom: 1px solid var(--border-color);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      background: #07061a;
     }
     .output-tab {
       padding: 0.75rem 1.25rem; cursor: pointer;
       font-family: 'Share Tech Mono', monospace; font-size: 0.7rem;
-      color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(255,255,255,0.4); letter-spacing: 0.1em; text-transform: uppercase;
       border-bottom: 2px solid transparent; transition: all 0.2s;
     }
-    .output-tab.active { color: var(--cyan); border-bottom-color: var(--cyan); }
-    .output-tab:hover:not(.active) { color: var(--text-primary); }
-    .output-panel { flex: 1; overflow: hidden; display: none; flex-direction: column; }
+    .output-tab.active { color: #00c8b4; border-bottom-color: #00c8b4; }
+    .output-tab:hover:not(.active) { color: #e8e5ff; }
+    .output-panel { flex: 1; overflow: hidden; display: none; flex-direction: column; position: relative; }
     .output-panel.active { display: flex; }
 
-    /* Preview iframe */
-    #preview-iframe {
-      flex: 1; border: none; background: #fff;
-    }
+    /* Preview */
+    #preview-iframe { flex: 1; border: none; background: #fff; }
     .preview-toolbar {
-      padding: 0.5rem 1rem; border-bottom: 1px solid var(--border-color);
+      padding: 0.5rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.07);
       flex-shrink: 0; display: flex; align-items: center; gap: 0.75rem;
+      background: #07061a;
     }
     .preview-url-bar {
       flex: 1; font-family: 'Share Tech Mono', monospace; font-size: 0.7rem;
-      color: var(--text-muted); background: rgba(0,0,0,0.3);
-      border: 1px solid var(--border-color); padding: 0.25rem 0.5rem;
+      color: rgba(255,255,255,0.35); background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.08); padding: 0.25rem 0.5rem;
     }
     .btn-preview-run {
-      background: rgba(0,255,159,0.1); border: 1px solid rgba(0,255,159,0.2);
-      color: var(--green); font-family: 'Share Tech Mono', monospace;
+      background: rgba(0,200,180,0.08); border: 1px solid rgba(0,200,180,0.2);
+      color: #00c8b4; font-family: 'Share Tech Mono', monospace;
       font-size: 0.65rem; padding: 0.25rem 0.6rem; cursor: pointer;
       letter-spacing: 0.1em; transition: all 0.2s;
     }
-    .btn-preview-run:hover { background: rgba(0,255,159,0.2); }
+    .btn-preview-run:hover { background: rgba(0,200,180,0.18); }
 
-    /* Tests panel */
-    .tests-panel-inner {
-      flex: 1; overflow-y: auto; padding: 1rem;
+    /* ── FLOAT SUBMIT PILL ──
+       Appears over the preview when all tests pass.
+       Solves the hidden-submit-button problem completely. */
+    #float-submit {
+      display: none;
+      position: absolute; bottom: 1.25rem; left: 50%; transform: translateX(-50%);
+      background: #0e0c1f; border: 1px solid #00c8b4;
+      align-items: center; gap: 1rem;
+      padding: 0.65rem 1.25rem; z-index: 20;
+      box-shadow: 0 0 24px rgba(0,200,180,0.3), 0 4px 16px rgba(0,0,0,0.5);
+      white-space: nowrap; animation: floatIn 0.3s ease-out;
     }
+    @keyframes floatIn {
+      from { opacity:0; transform: translateX(-50%) translateY(8px); }
+      to   { opacity:1; transform: translateX(-50%) translateY(0); }
+    }
+    #float-submit .float-label {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.72rem;
+      color: #00c8b4; letter-spacing: 0.15em;
+    }
+    #float-submit .btn-float-go {
+      background: linear-gradient(135deg, #00c8b4, #007a6e);
+      border: none; color: #03020a;
+      font-family: 'Orbitron', monospace; font-size: 0.72rem; font-weight: 700;
+      letter-spacing: 0.15em; padding: 0.4rem 0.875rem; cursor: pointer;
+      clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%);
+      transition: all 0.2s;
+    }
+    #float-submit .btn-float-go:hover { box-shadow: 0 0 12px rgba(0,200,180,0.4); }
+
+    /* ── TESTS PANEL ── */
+    .tests-panel-inner { flex: 1; overflow-y: auto; padding: 1rem; }
     .tests-panel-inner::-webkit-scrollbar { width: 4px; }
-    .tests-panel-inner::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
+    .tests-panel-inner::-webkit-scrollbar-thumb { background: rgba(0,200,180,0.2); border-radius: 2px; }
     .test-list { list-style: none; margin-bottom: 1rem; }
     .test-item {
       display: flex; align-items: flex-start; gap: 0.75rem;
@@ -245,47 +280,49 @@
     }
     .test-item:last-child { border-bottom: none; }
     .test-icon { flex-shrink: 0; font-size: 0.9rem; margin-top: 1px; }
-    .test-icon.pass { color: var(--green); }
-    .test-icon.fail { color: var(--magenta); }
+    .test-icon.pass { color: #00ff9f; }
+    .test-icon.fail { color: #ff003c; }
     .test-icon.pending { color: rgba(255,255,255,0.2); }
-    .test-desc { color: var(--text-muted); flex: 1; line-height: 1.5; }
-    .test-item.pass .test-desc { color: var(--text-secondary); }
+    .test-desc { color: rgba(255,255,255,0.5); flex: 1; line-height: 1.5; }
+    .test-item.pass .test-desc { color: rgba(232,229,255,0.85); }
 
     .btn-submit {
       width: 100%;
-      background: linear-gradient(135deg, var(--green), var(--cyan));
-      border: none; color: var(--bg-deep);
+      background: linear-gradient(135deg, #00c8b4, #007a6e);
+      border: none; color: #03020a;
       font-family: 'Orbitron', monospace; font-size: 0.8rem; font-weight: 700;
       letter-spacing: 0.2em; padding: 0.875rem; cursor: pointer;
       clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
       transition: all 0.2s;
     }
-    .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,255,159,0.3); }
-    .btn-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,200,180,0.35); }
+    .btn-submit:disabled { opacity: 0.35; cursor: not-allowed; transform: none; box-shadow: none; }
 
     .all-pass-banner {
-      background: rgba(0,255,159,0.08); border: 1px solid rgba(0,255,159,0.2);
+      background: rgba(0,200,180,0.08); border: 1px solid rgba(0,200,180,0.3);
       padding: 0.75rem; text-align: center; margin-bottom: 1rem;
       font-family: 'Orbitron', monospace; font-size: 0.8rem; font-weight: 700;
-      color: var(--green); letter-spacing: 0.1em;
+      color: #00c8b4; letter-spacing: 0.1em;
       animation: fadeIn 0.4s; display: none;
     }
     .all-pass-banner.visible { display: block; }
     @keyframes fadeIn { from { opacity:0; transform:translateY(-4px); } to { opacity:1; } }
 
     .submit-footer {
-      padding: 1rem; border-top: 1px solid var(--border-color); flex-shrink: 0;
+      padding: 1rem; border-top: 1px solid rgba(255,255,255,0.07); flex-shrink: 0;
+      background: #07061a;
     }
     .tests-header {
-      padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color);
+      padding: 0.75rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.07);
       flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+      background: #07061a;
     }
     .test-score {
       font-family: 'Orbitron', monospace; font-size: 0.8rem; font-weight: 700;
       letter-spacing: 0.1em;
     }
 
-    /* ── NFT UNLOCK OVERLAY ── */
+    /* ── NFT OVERLAY ── */
     .nft-overlay {
       position: fixed; inset: 0; z-index: 999;
       background: rgba(3,2,10,0.92); backdrop-filter: blur(20px);
@@ -293,25 +330,26 @@
       opacity: 0; pointer-events: none; transition: opacity 0.5s;
     }
     .nft-overlay.show { opacity: 1; pointer-events: all; }
-    .nft-unlock-box {
-      text-align: center; max-width: 420px; padding: 2rem;
-    }
+    .nft-unlock-box { text-align: center; max-width: 420px; padding: 2rem; }
     .nft-unlocked-label {
       font-family: 'Share Tech Mono', monospace; font-size: 0.7rem;
-      color: var(--gold); letter-spacing: 0.4em; text-transform: uppercase;
+      color: #ffd700; letter-spacing: 0.4em; text-transform: uppercase;
       margin-bottom: 0.75rem; animation: fadeIn 1s 0.2s both;
     }
     .nft-title-big {
       font-family: 'Orbitron', monospace; font-size: 1.5rem; font-weight: 900;
-      color: var(--text-primary); letter-spacing: 0.1em; margin-bottom: 0.5rem;
+      color: #e8e5ff; letter-spacing: 0.1em; margin-bottom: 0.5rem;
       animation: fadeIn 1s 0.4s both;
     }
-    .nft-sub { font-family: 'Share Tech Mono', monospace; font-size: 0.8rem;
-      color: var(--text-muted); margin-bottom: 1.5rem; animation: fadeIn 1s 0.6s both; }
+    .nft-sub {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.8rem;
+      color: rgba(255,255,255,0.45); margin-bottom: 1.5rem;
+      animation: fadeIn 1s 0.6s both;
+    }
     .nft-art-container {
       width: 240px; height: 240px; margin: 0 auto 1.5rem;
-      border: 1px solid var(--gold); box-shadow: 0 0 30px rgba(255,215,0,0.2),
-        0 0 60px rgba(255,215,0,0.1);
+      border: 1px solid #ffd700;
+      box-shadow: 0 0 30px rgba(255,215,0,0.2), 0 0 60px rgba(255,215,0,0.1);
       animation: nftReveal 0.8s 0.8s both;
     }
     @keyframes nftReveal {
@@ -321,16 +359,15 @@
     .nft-art-container svg { width: 100%; height: 100%; display: block; }
     .nft-xp-award {
       font-family: 'Orbitron', monospace; font-size: 2rem; font-weight: 900;
-      color: var(--cyan); text-shadow: 0 0 20px var(--cyan);
-      margin-bottom: 0.25rem; animation: fadeIn 1s 1.2s both;
+      text-shadow: 0 0 20px currentColor; margin-bottom: 0.25rem;
+      animation: fadeIn 1s 1.2s both;
     }
     .nft-xp-label {
       font-family: 'Share Tech Mono', monospace; font-size: 0.75rem;
-      color: var(--text-muted); letter-spacing: 0.2em; margin-bottom: 1.5rem;
+      color: rgba(255,255,255,0.4); letter-spacing: 0.2em; margin-bottom: 1.5rem;
       animation: fadeIn 1s 1.2s both;
     }
-    .nft-actions { display: flex; gap: 0.75rem; justify-content: center;
-      animation: fadeIn 1s 1.4s both; }
+    .nft-actions { display: flex; gap: 0.75rem; justify-content: center; animation: fadeIn 1s 1.4s both; }
     .btn-next-lesson, .btn-dashboard {
       padding: 0.7rem 1.5rem;
       font-family: 'Orbitron', monospace; font-size: 0.75rem; font-weight: 700;
@@ -338,37 +375,39 @@
       clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
       transition: all 0.2s; cursor: pointer; border: none;
     }
-    .btn-next-lesson {
-      background: linear-gradient(135deg, var(--cyan), var(--violet));
-      color: var(--bg-deep);
-    }
-    .btn-next-lesson:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,240,255,0.3); }
+    .btn-next-lesson { background: linear-gradient(135deg, #00c8b4, #007a6e); color: #03020a; }
+    .btn-next-lesson:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,200,180,0.35); }
     .btn-dashboard {
-      background: transparent; border: 1px solid var(--border-color);
-      color: var(--text-muted); display: inline-block;
+      background: transparent; border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.5); display: inline-block;
     }
-    .btn-dashboard:hover { border-color: var(--text-muted); color: var(--text-primary); }
+    .btn-dashboard:hover { border-color: rgba(255,255,255,0.4); color: #e8e5ff; }
 
-    /* ── TIMER EXPIRED BANNER ── */
+    /* ── TIMER EXPIRED ── */
     .timer-expired {
       position: fixed; top: 56px; left: 0; right: 0; z-index: 50;
-      background: rgba(255,0,60,0.15); border-bottom: 1px solid var(--magenta);
+      background: rgba(255,0,60,0.15); border-bottom: 1px solid #ff003c;
       padding: 0.5rem; text-align: center;
       font-family: 'Orbitron', monospace; font-size: 0.75rem; font-weight: 700;
-      color: var(--magenta); letter-spacing: 0.15em; display: none;
+      color: #ff003c; letter-spacing: 0.15em; display: none;
     }
 
     /* ── LOADING ── */
     .lesson-loading {
-      position: fixed; inset: 0; z-index: 998; background: var(--bg-deep);
-      display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1rem;
+      position: fixed; inset: 0; z-index: 998; background: #03020a;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 1rem;
     }
-    .spin { width: 32px; height: 32px; border: 2px solid rgba(0,240,255,0.2);
-      border-top-color: var(--cyan); border-radius: 50%;
-      animation: spin 0.7s linear infinite; }
-    @keyframes spin { to{transform:rotate(360deg)} }
-    .loading-msg { font-family: 'Share Tech Mono', monospace; font-size: 0.8rem;
-      color: var(--text-muted); letter-spacing: 0.2em; }
+    .spin {
+      width: 32px; height: 32px; border: 2px solid rgba(0,200,180,0.2);
+      border-top-color: #00c8b4; border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-msg {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.8rem;
+      color: rgba(255,255,255,0.4); letter-spacing: 0.2em;
+    }
 
     /* ── RESPONSIVE ── */
     @media (max-width: 1100px) {
@@ -378,6 +417,9 @@
     @media (max-width: 768px) {
       .lesson-layout { grid-template-columns: 1fr; grid-template-rows: auto 400px auto; }
       .theory-pane { max-height: 300px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
     }
   </style>
 </head>
@@ -417,11 +459,11 @@
       <div class="lesson-full-title" id="lesson-full-title">—</div>
       <div class="lesson-full-sub" id="lesson-full-sub">—</div>
     </div>
-    <div class="theory-body" id="theory-body"><!-- Content injected --></div>
+    <div class="theory-body" id="theory-body"></div>
     <div class="theory-footer">
       <div class="hints-section">
         <button class="hints-toggle" onclick="toggleHints(this)">⬡ SHOW HINTS (0)</button>
-        <div class="hints-list" id="hints-list"><!-- injected --></div>
+        <div class="hints-list" id="hints-list"></div>
       </div>
     </div>
   </div>
@@ -430,10 +472,10 @@
   <div class="editor-pane">
     <div class="editor-header">
       <div class="pane-label">CODE EDITOR</div>
-      <span style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--text-muted)">index.html</span>
+      <span style="font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:rgba(255,255,255,0.3)">index.html</span>
       <div class="editor-actions">
         <button class="btn-reset" onclick="resetCode()">RESET</button>
-        <button class="btn-run" onclick="runCode()">▶ RUN</button>
+        <button class="btn-run" onclick="runAndCheck()">▶ RUN</button>
       </div>
     </div>
     <div id="ace-editor"></div>
@@ -450,22 +492,27 @@
     <div class="output-panel active" id="panel-preview">
       <div class="preview-toolbar">
         <span class="preview-url-bar">localhost:cipher — preview</span>
-        <button class="btn-preview-run" onclick="runCode()">↺ REFRESH</button>
+        <button class="btn-preview-run" onclick="runAndCheck()">↺ REFRESH</button>
       </div>
       <iframe id="preview-iframe" sandbox="allow-scripts" title="Code Preview"></iframe>
+      <!-- Float pill: appears when all tests pass so user never misses the submit button -->
+      <div id="float-submit">
+        <span class="float-label">◈ ALL OBJECTIVES CLEARED</span>
+        <button class="btn-float-go" onclick="switchTab('tests')">SUBMIT MISSION →</button>
+      </div>
     </div>
 
     <!-- Tests -->
     <div class="output-panel" id="panel-tests">
       <div class="tests-header">
         <div class="pane-label" style="margin:0">MISSION OBJECTIVES</div>
-        <div class="test-score" id="test-score-display" style="color:var(--text-muted)">0 / 0</div>
+        <div class="test-score" id="test-score-display" style="color:rgba(255,255,255,0.4)">0 / 0</div>
       </div>
       <div class="tests-panel-inner">
         <div class="all-pass-banner" id="all-pass-banner">
           ◈ ALL OBJECTIVES COMPLETE — READY TO SUBMIT ◈
         </div>
-        <ul class="test-list" id="test-list"><!-- injected --></ul>
+        <ul class="test-list" id="test-list"></ul>
       </div>
       <div class="submit-footer">
         <button class="btn-submit" id="btn-submit" onclick="submitLesson()" disabled>
@@ -482,7 +529,7 @@
     <div class="nft-unlocked-label">◈ NFT UNLOCKED ◈</div>
     <div class="nft-title-big" id="nft-title">—</div>
     <div class="nft-sub" id="nft-sub">Tier reward achieved.</div>
-    <div class="nft-art-container" id="nft-art-container"><!-- SVG --></div>
+    <div class="nft-art-container" id="nft-art-container"></div>
     <div class="nft-xp-award" id="nft-xp-award">+80 XP</div>
     <div class="nft-xp-label">PROTOCOL POINTS EARNED</div>
     <div class="nft-actions">
@@ -506,18 +553,19 @@
   const db   = firebase.firestore();
 
   // ── GLOBALS ────────────────────────────────────────────────
-  let lesson    = null;
-  let tier      = null;
-  let userData  = null;
-  let editor    = null;
-  let timerOn   = false;
-  let timerInt  = null;
-  let timerSecs = 0;
-  let timerExpired = false;
-  let testResults  = [];
-  let nextLessonId = null;
+  let lesson        = null;
+  let tier          = null;
+  let userData      = null;
+  let editor        = null;
+  let timerOn       = false;
+  let timerInt      = null;
+  let timerSecs     = 0;
+  let timerExpired  = false;
+  let testResults   = [];
+  let nextLessonId  = null;
+  let changeTimeout = null;
 
-  // ── INIT ───────────────────────────────────────────────────
+  // ── AUTH / INIT ────────────────────────────────────────────
   auth.onAuthStateChanged(async user => {
     if (!user) { window.location.href = 'index.html'; return; }
 
@@ -530,10 +578,9 @@
     lesson = LESSONS_BY_ID[lessonId];
     tier   = CURRICULUM.tiers.find(t => t.lessons.some(l => l.id === lessonId));
 
-    const doc  = await db.collection('users').doc(user.uid).get();
-    userData   = { uid: user.uid, ...doc.data() };
+    const doc = await db.collection('users').doc(user.uid).get();
+    userData  = { uid: user.uid, ...doc.data() };
 
-    // Already completed?
     const done = (userData.completedLessons || []).includes(lessonId);
 
     buildUI();
@@ -541,13 +588,11 @@
     buildTests();
 
     if (done) {
-      // Allow replay but submit locked
       document.getElementById('btn-submit').textContent = 'ALREADY COMPLETED';
       document.getElementById('btn-submit').disabled = true;
     }
 
-    // Find next
-    const idx = ALL_LESSONS.findIndex(l => l.id === lessonId);
+    const idx    = ALL_LESSONS.findIndex(l => l.id === lessonId);
     nextLessonId = idx >= 0 && idx < ALL_LESSONS.length - 1 ? ALL_LESSONS[idx+1].id : null;
 
     document.getElementById('lesson-loading').style.display = 'none';
@@ -560,14 +605,13 @@
     const tierName  = tier?.name || 'GHOST';
     const tierColor = { ghost:'#8880b8', runner:'#00f0ff', hacker:'#7b00ff', netrunner:'#ff003c' }[tier?.id] || '#8880b8';
 
-    document.title  = `CIPHER://HTML — L${lesson.number}: ${lesson.title}`;
+    document.title = `CIPHER://HTML — L${lesson.number}: ${lesson.title}`;
     document.getElementById('nav-lesson-num').textContent   = `LESSON ${lesson.number} · ${tierName}`;
     document.getElementById('nav-lesson-num').style.color   = tierColor;
     document.getElementById('nav-lesson-title').textContent  = lesson.title;
     document.getElementById('nav-xp-badge').textContent     = `+${lesson.xp} XP`;
     document.getElementById('lesson-full-title').textContent = lesson.title;
     document.getElementById('lesson-full-sub').textContent   = lesson.subtitle;
-
     document.getElementById('theory-body').innerHTML = lesson.theory + buildHintsHTML();
     document.querySelector('.hints-toggle').textContent =
       `⬡ SHOW HINTS (${lesson.hints?.length || 0})`;
@@ -576,7 +620,10 @@
   function buildHintsHTML() {
     if (!lesson.hints?.length) return '';
     const items = lesson.hints.map(h => `<div class="hint-item">${h}</div>`).join('');
-    return `<div class="hints-section"><button class="hints-toggle" onclick="toggleHints(this)">⬡ SHOW HINTS (${lesson.hints.length})</button><div class="hints-list" id="hints-list">${items}</div></div>`;
+    return `<div class="hints-section">
+      <button class="hints-toggle" onclick="toggleHints(this)">⬡ SHOW HINTS (${lesson.hints.length})</button>
+      <div class="hints-list">${items}</div>
+    </div>`;
   }
 
   // ── EDITOR ─────────────────────────────────────────────────
@@ -592,47 +639,60 @@
       tabSize: 2
     });
     editor.setValue(lesson.startCode || '', -1);
-    editor.on('change', () => { runCode(); runTests(); });
 
-    // Auto-run once
-    setTimeout(() => runCode(), 300);
+    // FIX #5: debounced onChange — was hitting preview + tests on every keystroke
+    editor.on('change', () => {
+      clearTimeout(changeTimeout);
+      changeTimeout = setTimeout(() => {
+        updatePreview();
+        runTests();
+      }, 400);
+    });
+
+    setTimeout(() => { updatePreview(); runTests(); }, 300);
   }
 
-  // ── RUN / PREVIEW ──────────────────────────────────────────
-  window.runCode = function() {
-    const code = editor?.getValue() || '';
-    const blob = new Blob([code], { type: 'text/html' });
-    const url  = URL.createObjectURL(blob);
+  // ── PREVIEW ────────────────────────────────────────────────
+  function updatePreview() {
+    const code   = editor?.getValue() || '';
+    const blob   = new Blob([code], { type: 'text/html' });
+    const url    = URL.createObjectURL(blob);
     const iframe = document.getElementById('preview-iframe');
-    iframe.src = url;
+    iframe.src   = url;
     iframe.onload = () => URL.revokeObjectURL(url);
-    runTests();
+  }
+
+  // runAndCheck: RUN button + ↺ REFRESH — runs preview AND switches to tests tab
+  window.runAndCheck = function() {
+    updatePreview();
+    runTests().then(() => switchTab('tests'));
   };
+
+  // Legacy alias
+  window.runCode = window.runAndCheck;
 
   window.resetCode = function() {
     if (!confirm('Reset code to starter template?')) return;
     editor.setValue(lesson.startCode || '', -1);
-    runCode();
+    updatePreview();
+    runTests();
   };
 
   // ── TEST RUNNER ────────────────────────────────────────────
   async function runTests() {
-    const code = editor?.getValue() || '';
+    const code  = editor?.getValue() || '';
     testResults = await evaluateTests(lesson.tests || [], code);
     renderTests();
   }
 
   async function evaluateTests(tests, code) {
-    // Parse code in a temporary DOM
     const parser  = new DOMParser();
     const htmlDoc = parser.parseFromString(code, 'text/html');
     const results = [];
-
     for (const test of tests) {
       let pass = false;
-      try {
-        pass = checkTest(test, code, htmlDoc);
-      } catch (e) { pass = false; }
+      try { pass = checkTest(test, code, htmlDoc); }
+      catch (e) { pass = false; }
       results.push({ ...test, pass });
     }
     return results;
@@ -640,6 +700,7 @@
 
   function checkTest(test, raw, doc) {
     switch (test.type) {
+
       case 'doctype':
         return /<!DOCTYPE\s+html>/i.test(raw);
 
@@ -658,15 +719,23 @@
       case 'attr-all': {
         const els = doc.querySelectorAll(test.selector);
         if (!els.length) return false;
-        return Array.from(els).every(el => el.hasAttribute(test.attr) && el.getAttribute(test.attr).trim() !== '');
+        return Array.from(els).every(el =>
+          el.hasAttribute(test.attr) && el.getAttribute(test.attr).trim() !== ''
+        );
       }
 
-      case 'css-rule':
-        return raw.includes(test.property) && raw.includes(test.value);
+      case 'css-rule': {
+        // FIX #3: test.value is optional in many curriculum tests
+        const hasProperty = raw.includes(test.property);
+        const hasValue    = !test.value || raw.includes(test.value);
+        return hasProperty && hasValue;
+      }
 
       case 'css-class': {
-        const styleText = Array.from(doc.querySelectorAll('style')).map(s=>s.textContent).join('');
-        return styleText.includes(test.selector);
+        // FIX #4: test.selector was undefined — count actual class selectors in style blocks
+        const styleText      = Array.from(doc.querySelectorAll('style')).map(s => s.textContent).join('');
+        const classSelectors = styleText.match(/\.[a-zA-Z][\w-]*/g) || [];
+        return classSelectors.length >= 2;
       }
 
       case 'css-colors':
@@ -679,7 +748,8 @@
         return raw.includes('getContext') && raw.includes('canvas');
 
       case 'js-api':
-        return raw.includes(test.api);
+        // FIX #2: curriculum uses test.method, not test.api
+        return raw.includes(test.method || test.api || '');
 
       default:
         return false;
@@ -687,51 +757,58 @@
   }
 
   function renderTests() {
-    const list     = document.getElementById('test-list');
-    const scoreEl  = document.getElementById('test-score-display');
-    const banner   = document.getElementById('all-pass-banner');
+    const list      = document.getElementById('test-list');
+    const scoreEl   = document.getElementById('test-score-display');
+    const banner    = document.getElementById('all-pass-banner');
     const submitBtn = document.getElementById('btn-submit');
+    const floatBtn  = document.getElementById('float-submit');
 
-    const total  = testResults.length;
-    const passed = testResults.filter(r => r.pass).length;
+    const total   = testResults.length;
+    const passed  = testResults.filter(r => r.pass).length;
     const allPass = passed === total && total > 0;
+    const done    = (userData?.completedLessons || []).includes(lesson.id);
 
     document.getElementById('tab-test-count').textContent = `${passed}/${total}`;
     scoreEl.textContent = `${passed} / ${total}`;
-    scoreEl.style.color = allPass ? 'var(--green)' : passed > 0 ? '#ff8800' : 'var(--magenta)';
+    scoreEl.style.color = allPass ? '#00c8b4' : passed > 0 ? '#ff8800' : '#ff003c';
 
     banner.classList.toggle('visible', allPass);
-    const done = (userData?.completedLessons || []).includes(lesson.id);
+
+    // Float pill visible over preview when all pass and not already completed
+    floatBtn.style.display = (allPass && !done) ? 'flex' : 'none';
+
     if (!done) submitBtn.disabled = !allPass;
 
+    // FIX #1: use test.message — curriculum defines message not description
     list.innerHTML = testResults.map(r => `
       <li class="test-item ${r.pass ? 'pass' : 'fail'}">
         <span class="test-icon ${r.pass ? 'pass' : 'fail'}">${r.pass ? '◈' : '◻'}</span>
-        <span class="test-desc">${r.description}</span>
+        <span class="test-desc">${r.message || r.description || 'Test'}</span>
       </li>
     `).join('');
   }
 
   function buildTests() {
-    // Build initial pending list
     const list = document.getElementById('test-list');
+    // FIX #1: use test.message
     list.innerHTML = (lesson.tests || []).map(t => `
       <li class="test-item">
         <span class="test-icon pending">◻</span>
-        <span class="test-desc">${t.description}</span>
+        <span class="test-desc">${t.message || t.description || 'Test'}</span>
       </li>
     `).join('');
-    document.getElementById('tab-test-count').textContent = `0/${(lesson.tests||[]).length}`;
-    document.getElementById('test-score-display').textContent = `0 / ${(lesson.tests||[]).length}`;
+    const total = (lesson.tests || []).length;
+    document.getElementById('tab-test-count').textContent    = `0/${total}`;
+    document.getElementById('test-score-display').textContent = `0 / ${total}`;
   }
 
   // ── TABS ───────────────────────────────────────────────────
   window.switchTab = function(tab) {
-    document.querySelectorAll('.output-tab').forEach((t,i) => {
+    document.querySelectorAll('.output-tab').forEach((t, i) => {
       t.classList.toggle('active', (i===0&&tab==='preview')||(i===1&&tab==='tests'));
     });
     document.getElementById('panel-preview').classList.toggle('active', tab==='preview');
-    document.getElementById('panel-tests').classList.toggle('active', tab==='tests');
+    document.getElementById('panel-tests').classList.toggle('active',   tab==='tests');
   };
 
   // ── HINTS ──────────────────────────────────────────────────
@@ -772,13 +849,13 @@
   }
 
   function updateTimerDisplay() {
-    const m = Math.floor(timerSecs / 60);
-    const s = timerSecs % 60;
+    const m  = Math.floor(timerSecs / 60);
+    const s  = timerSecs % 60;
     const el = document.getElementById('timer-display');
     el.textContent = `${m}:${String(s).padStart(2,'0')}`;
-    if (timerSecs <= 30) el.className = 'timer-display danger';
+    if (timerSecs <= 30)      el.className = 'timer-display danger';
     else if (timerSecs <= 90) el.className = 'timer-display warning';
-    else el.className = 'timer-display';
+    else                      el.className = 'timer-display';
   }
 
   // ── SUBMIT ─────────────────────────────────────────────────
@@ -789,20 +866,16 @@
     const btn = document.getElementById('btn-submit');
     btn.textContent = 'SUBMITTING...'; btn.disabled = true;
 
-    const xpEarned = lesson.xp + (!timerExpired && timerOn === false && document.getElementById('btn-timer-toggle').classList.contains('active') === false ? 0 : (!timerExpired ? lesson.timerXpBonus : 0));
-    const finalXP  = lesson.xp + (!timerExpired && document.getElementById('btn-timer-toggle').classList.contains('active') ? lesson.timerXpBonus : 0);
+    const timerBonus = (timerOn && !timerExpired) ? lesson.timerXpBonus : 0;
+    const finalXP    = lesson.xp + timerBonus;
 
     try {
-      const uid = userData.uid;
-      await db.collection('users').doc(uid).update({
+      await db.collection('users').doc(userData.uid).update({
         xp:               firebase.firestore.FieldValue.increment(finalXP),
         completedLessons: firebase.firestore.FieldValue.arrayUnion(lesson.id),
         lastActive:       firebase.firestore.FieldValue.serverTimestamp()
       });
-
-      // Show NFT overlay
       showNFTOverlay(finalXP);
-
     } catch (err) {
       btn.textContent = 'ERROR — RETRY';
       btn.disabled = false;
@@ -811,15 +884,15 @@
   };
 
   function showNFTOverlay(xpEarned) {
-    const overlay  = document.getElementById('nft-overlay');
-    const art      = generateNFTArtLarge(lesson.id, tier?.id || 'ghost');
+    const overlay   = document.getElementById('nft-overlay');
+    const art       = generateNFTArtLarge(lesson.id, tier?.id || 'ghost');
     const tierColor = { ghost:'#8880b8', runner:'#00f0ff', hacker:'#7b00ff', netrunner:'#ff003c' }[tier?.id] || '#8880b8';
 
-    document.getElementById('nft-title').textContent = lesson.nftName;
-    document.getElementById('nft-sub').textContent   = `${tier?.name || 'GHOST'} Tier · Lesson ${lesson.number} Complete`;
+    document.getElementById('nft-title').textContent       = lesson.nftName;
+    document.getElementById('nft-sub').textContent         = `${tier?.name || 'GHOST'} Tier · Lesson ${lesson.number} Complete`;
     document.getElementById('nft-art-container').innerHTML = art;
-    document.getElementById('nft-xp-award').textContent = `+${xpEarned} XP`;
-    document.getElementById('nft-xp-award').style.color = tierColor;
+    document.getElementById('nft-xp-award').textContent    = `+${xpEarned} XP`;
+    document.getElementById('nft-xp-award').style.color    = tierColor;
 
     if (!nextLessonId) {
       document.getElementById('btn-next-lesson').textContent = 'VIEW ALL MISSIONS →';
@@ -827,8 +900,6 @@
     }
 
     overlay.classList.add('show');
-
-    // Confetti-style particles
     launchParticles();
   }
 
@@ -843,21 +914,21 @@
     }
   };
 
-  // ── CONFETTI PARTICLES ─────────────────────────────────────
+  // ── CONFETTI ───────────────────────────────────────────────
   function launchParticles() {
     const colors = ['#00f0ff','#7b00ff','#ff003c','#00ff9f','#ffd700'];
     const frag   = document.createDocumentFragment();
     for (let i = 0; i < 30; i++) {
-      const p = document.createElement('div');
+      const p     = document.createElement('div');
       const color = colors[Math.floor(Math.random() * colors.length)];
       const size  = 4 + Math.random() * 6;
-      const x     = 20 + Math.random() * 60; // % from left
+      const x     = 20 + Math.random() * 60;
       const delay = Math.random() * 0.6;
       p.style.cssText = `
-        position:fixed; top:50%; left:${x}%; width:${size}px; height:${size}px;
-        background:${color}; box-shadow:0 0 6px ${color}; z-index:1000;
+        position:fixed;top:50%;left:${x}%;width:${size}px;height:${size}px;
+        background:${color};box-shadow:0 0 6px ${color};z-index:1000;
         border-radius:${Math.random()>0.5?'50%':'0'};
-        animation: confettiFall 1.2s ${delay}s ease-out forwards;
+        animation:confettiFall 1.2s ${delay}s ease-out forwards;
         pointer-events:none;
       `;
       frag.appendChild(p);
@@ -870,8 +941,7 @@
         @keyframes confettiFall {
           from { transform: translateY(0) rotate(0deg); opacity: 1; }
           to   { transform: translateY(300px) rotate(720deg); opacity: 0; }
-        }
-      `;
+        }`;
       document.head.appendChild(style);
     }
     document.body.appendChild(frag);
